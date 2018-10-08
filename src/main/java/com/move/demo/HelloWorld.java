@@ -7,15 +7,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 public class HelloWorld {
 
+
     @Autowired
-    private GirlInfo girl;
+    public GirlInfo girl;
 
 
     @RequestMapping(value = "/hello",method = RequestMethod.GET)
     public String say(){
         return  girl.getCupSize();
     }
+
 }

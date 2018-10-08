@@ -1,4 +1,4 @@
-package com.move.demo;
+package com.move;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
