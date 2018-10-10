@@ -3,3 +3,13 @@ server:
 girl:
   cupSize: B
   age: 18
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://192.168.10.125:3306/wej_test
+    username: jq
+    password: jq
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
