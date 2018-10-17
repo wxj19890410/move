@@ -11,5 +11,5 @@ spring:
     password: jq
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
     show-sql: true
