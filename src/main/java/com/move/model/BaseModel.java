@@ -6,17 +6,14 @@ import java.util.Date;
 
 @MappedSuperclass
 public class BaseModel implements Serializable {
+    private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue
     private  Integer id;
 
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "create_date")
-    private Date createDate;
-
     @Column(name = "del_flag")
-    private Date delFlag;
+    private String delFlag;
 
 
     public BaseModel() {
@@ -30,19 +27,12 @@ public class BaseModel implements Serializable {
         this.id = id;
     }
 
-    public Date getCreateDate() {
-        return createDate;
-    }
 
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
-    }
-
-    public Date getDelFlag() {
+    public String getDelFlag() {
         return delFlag;
     }
 
-    public void setDelFlag(Date delFlag) {
+    public void setDelFlag(String delFlag) {
         this.delFlag = delFlag;
     }
 }

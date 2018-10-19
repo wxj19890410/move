@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Table(name="user_data")
 public class UserData extends BaseModel implements Serializable {
 
-
+    private static final long serialVersionUID = 1L;
 
     private  String name;
 
