@@ -17,7 +17,7 @@ public class UserAction {
     @GetMapping(value = "loadInfo")
     public Object loadInfo(@RequestParam(value = "id",required = false,defaultValue = "0") Integer id){
         System.out.print(id);
-       return  System.out.print(id);
+       return userService.load(id);
     }
 
 
