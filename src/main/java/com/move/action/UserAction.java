@@ -5,6 +5,7 @@ import com.move.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -14,10 +15,9 @@ public class UserAction {
     private UserService userService;
 
     @GetMapping(value = "loadInfo")
-    public Object loadInfo(Integer id){
-
-
-       return userService.load(id);
+    public Object loadInfo(@RequestParam(value = "id",required = false,defaultValue = "0") Integer id){
+        System.out.print(id);
+       return  System.out.print(id);
     }
 
 

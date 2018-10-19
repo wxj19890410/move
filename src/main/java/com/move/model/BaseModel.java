@@ -1,9 +1,6 @@
 package com.move.model;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -11,19 +8,25 @@ import java.util.Date;
 public class BaseModel implements Serializable {
     @Id
     @GeneratedValue
-    private  long id;
+    private  Integer id;
 
+
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "create_date")
     private Date createDate;
 
     @Column(name = "del_flag")
     private Date delFlag;
 
-    public long getId() {
+
+    public BaseModel() {
+    }
+
+    public Integer getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

@@ -9,6 +9,8 @@ import java.io.Serializable;
 @Table(name="user_data")
 public class UserData extends BaseModel implements Serializable {
 
+
+
     private  String name;
 
     @Column(name = "pass_word")
@@ -16,6 +18,9 @@ public class UserData extends BaseModel implements Serializable {
 
     @Column(name = "user_name")
     private  String userName;
+
+    public UserData() {
+    }
 
     public String getName() {
         return name;
