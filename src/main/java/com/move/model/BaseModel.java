@@ -16,9 +16,6 @@ public class BaseModel implements Serializable {
     private String delFlag;
 
 
-    public BaseModel() {
-    }
-
     public Integer getId() {
         return id;
     }

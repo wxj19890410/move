@@ -5,11 +5,11 @@ girl:
   age: 18
 spring:
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    url: jdbc:mysql://192.168.10.125:3306/wej_test
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://192.168.10.125:3306/wej_test
     username: jq
     password: jq
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
+    show-sql: false

@@ -1,5 +1,7 @@
 package com.move.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
@@ -7,6 +9,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name="user_data")
+@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler","operations","roles","menus"})
 public class UserData extends BaseModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -19,8 +22,6 @@ public class UserData extends BaseModel implements Serializable {
     @Column(name = "user_name")
     private  String userName;
 
-    public UserData() {
-    }
 
     public String getName() {
         return name;
