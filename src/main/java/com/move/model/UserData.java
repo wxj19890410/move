@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name="user_data")
-@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler","operations","roles","menus"})
+@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler"})
 public class UserData extends BaseModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
