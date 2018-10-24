@@ -33,7 +33,7 @@ public class UserAction {
 
     private static final Logger logger = LoggerFactory.getLogger(UserAction.class);
 
-    @GetMapping(value = "loadInfo")
+    @RequestMapping(value = "loadInfo")
     public Object loadInfo(Integer id){
         UserData userData = new UserData();
         if(null!=id){
