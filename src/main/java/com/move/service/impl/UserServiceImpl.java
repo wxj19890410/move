@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.Temporal;
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -20,5 +21,12 @@ public class UserServiceImpl implements UserService {
     @Transactional(propagation = Propagation.REQUIRED)
     public UserData load(Integer id) {
         return userDataDao.getOne(id);
+    }
+
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public List<UserData> findAll() {
+        return userDataDao.findAll();
     }
 }

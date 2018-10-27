@@ -5,11 +5,12 @@ girl:
   age: 18
 spring:
   datasource:
-    driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://192.168.10.125:3306/wej_test
-    username: jq
-    password: jq
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    url: jdbc:sqlserver://127.0.0.1:1433; DatabaseName=wxj_test
+    username: sa
+    password: 123456
   jpa:
+    database: sql_server
     hibernate:
       ddl-auto: none
     show-sql: false

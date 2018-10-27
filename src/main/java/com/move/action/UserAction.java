@@ -33,7 +33,7 @@ public class UserAction {
 
     private static final Logger logger = LoggerFactory.getLogger(UserAction.class);
 
-    @RequestMapping(value = "loadInfo")
+    @GetMapping(value = "loadInfo")
     public Object loadInfo(Integer id){
         UserData userData = new UserData();
         if(null!=id){
@@ -42,9 +42,14 @@ public class UserAction {
        return userData;
     }
 
-    @PostMapping("/upload")
-    public void uploadPicture(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        System.out.print(11111);
+    @GetMapping(value = "findUserData")
+    public Object findUserData(){
+        return userService.findAll();
+    }
+
+    @PostMapping(value = "upload")
+    public Object uploadPicture(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        System.out.print(3333);
         //获取文件需要上传到的路径
         String path = request.getSession().getServletContext().getRealPath("/upload") + "/";
         File dir = new File(path);
@@ -118,6 +123,7 @@ public class UserAction {
         res.put("success", true);
         printWriter.write(JSONUtils.toJSONString(res));
         printWriter.flush();
+        return  "44444";
     }
 
 
