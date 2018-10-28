@@ -26,9 +26,9 @@ public class HttpAspect {
     public void doBefore(JoinPoint joinPoint) {
         String actionClass = joinPoint.getSignature().getDeclaringTypeName();
         if(BASE_ACTION.contains(actionClass)){
-            System.out.print("2222");
+
         }else{
-            System.out.print("1111");
+
         }
         ServletRequestAttributes attributes= (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes.getRequest();

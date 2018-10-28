@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://192.168.10.125:3306/wej_test
+    username: jq
+    password: jq
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false

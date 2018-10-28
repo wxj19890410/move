@@ -5,10 +5,18 @@ import com.alibaba.druid.support.json.JSONUtils;
 import com.move.model.UserData;
 import com.move.service.UserService;
 
+import com.move.utils.Properties;
+import com.move.utils.Utilities;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +41,7 @@ public class UserAction {
 
     private static final Logger logger = LoggerFactory.getLogger(UserAction.class);
 
+
     @GetMapping(value = "loadInfo")
     public Object loadInfo(Integer id){
         UserData userData = new UserData();
@@ -48,85 +57,81 @@ public class UserAction {
     }
 
     @PostMapping(value = "upload")
-    public Object uploadPicture(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        System.out.print(3333);
+    public Object uploadPicture(MultipartFile file,HttpServletRequest request, HttpServletResponse response) throws IllegalStateException, IOException {
         //获取文件需要上传到的路径
-        String path = request.getSession().getServletContext().getRealPath("/upload") + "/";
-        File dir = new File(path);
-        if (!dir.exists()) {
-            dir.mkdir();
-        }
-        logger.debug("path=" + path);
-
-        request.setCharacterEncoding("utf-8");  //设置编码
-        //获得磁盘文件条目工厂
-        DiskFileItemFactory factory = new DiskFileItemFactory();
-
-        //如果没以下两行设置的话,上传大的文件会占用很多内存，
-        //设置暂时存放的存储室,这个存储室可以和最终存储文件的目录不同
-        /**
-         * 原理: 它是先存到暂时存储室，然后再真正写到对应目录的硬盘上，
-         * 按理来说当上传一个文件时，其实是上传了两份，第一个是以 .tem 格式的
-         * 然后再将其真正写到对应目录的硬盘上
-         */
-        factory.setRepository(dir);
-        //设置缓存的大小，当上传文件的容量超过该缓存时，直接放到暂时存储室
-        factory.setSizeThreshold(1024 * 1024);
-        //高水平的API文件上传处理
-        ServletFileUpload upload = new ServletFileUpload(factory);
+        //System.out.println("进入后台成功");
+        String path = null;// 文件路径
+        String type = null;// 文件类型
+        String fileName = file.getOriginalFilename();// 文件原名称
+        System.out.println("上传的文件原名称:"+fileName);
         try {
-            List<FileItem> list = upload.parseRequest(request);
-            FileItem picture = null;
-            for (FileItem item : list) {
-                //获取表单的属性名字
-                String name = item.getFieldName();
-                //如果获取的表单信息是普通的 文本 信息
-                if (item.isFormField()) {
-                    //获取用户具体输入的字符串
-                    String value = item.getString();
-                    request.setAttribute(name, value);
-                    logger.debug("name=" + name + ",value=" + value);
-                } else {
-                    picture = item;
-                }
-            }
+            // 项目在容器中实际发布运行的根路径
+            String realPath = request.getSession().getServletContext().getRealPath("/");
+            // 自定义的文件名称
+            String trueFileName = file.getOriginalFilename();
 
-            //自定义上传图片的名字为userId.jpg
-            String fileName = request.getAttribute("userId") + ".jpg";
-            String destPath = path + fileName;
-            logger.debug("destPath=" + destPath);
+            System.out.println("文件名称111:"+file.getOriginalFilename());
+            System.out.println("文件名称:"+file.getContentType());
+            // 设置存放图片文件的路径
+            path = realPath+ trueFileName;
+            System.out.println("存放图片文件的路径:"+path);
+            // 转存文件到指定的路径
+            file.transferTo(new File(path));
+            System.out.println("文件成功上传到指定目录下");
 
-            //真正写到磁盘上
-            File file = new File(destPath);
-            OutputStream out = new FileOutputStream(file);
-            InputStream in = picture.getInputStream();
-            int length = 0;
-            byte[] buf = new byte[1024];
-            // in.read(buf) 每次读到的数据存放在buf 数组中
-            while ((length = in.read(buf)) != -1) {
-                //在buf数组中取出数据写到（输出流）磁盘上
-                out.write(buf, 0, length);
-            }
-            in.close();
-            out.close();
-        } catch (FileUploadException e1) {
-            logger.error("", e1);
+            //得到所有数据
+            readExcel(path);
+
+
+            return "文件上传成功";
         } catch (Exception e) {
-            logger.error("", e);
+            e.printStackTrace();
+            return "文件上传失败";
         }
-
-
-        PrintWriter printWriter = response.getWriter();
-        response.setContentType("application/json");
-        response.setCharacterEncoding("utf-8");
-        HashMap<String, Object> res = new HashMap<String, Object>();
-        res.put("success", true);
-        printWriter.write(JSONUtils.toJSONString(res));
-        printWriter.flush();
-        return  "44444";
     }
 
+    public  static void readExcel(String path) throws Exception {
 
+        InputStream is = new FileInputStream(new File(path));
+        Workbook hssfWorkbook = null;
+        if (path.endsWith("xlsx")) {
+            hssfWorkbook = new XSSFWorkbook(is);//Excel 2007
+        } else if (path.endsWith("xls")) {
+            hssfWorkbook = new HSSFWorkbook(is);//Excel 2003
 
+        }
+        // HSSFWorkbook hssfWorkbook = new HSSFWorkbook(is);
+        // XSSFWorkbook hssfWorkbook = new XSSFWorkbook(is);
+       /* User student = null;
+        List<User> list = new ArrayList<User>();*/
+        // 循环工作表Sheet
+        for (int numSheet = 0; numSheet < hssfWorkbook.getNumberOfSheets(); numSheet++) {
+            //HSSFSheet hssfSheet = hssfWorkbook.getSheetAt(numSheet);
+            Sheet hssfSheet = hssfWorkbook.getSheetAt(numSheet);
+            if (hssfSheet == null) {
+                continue;
+            }
+            // 循环行Row
+            for (int rowNum = 1; rowNum <= hssfSheet.getLastRowNum(); rowNum++) {
+                //HSSFRow hssfRow = hssfSheet.getRow(rowNum);
+                Row hssfRow = hssfSheet.getRow(rowNum);
+                if (hssfRow != null) {
+                    // student = new User();
+                    //HSSFCell name = hssfRow.getCell(0);
+                    //HSSFCell pwd = hssfRow.getCell(1);
+                    Cell name = hssfRow.getCell(0);
+                    Cell pwd = hssfRow.getCell(1);
+                    System.out.println("字段" + hssfRow.getRowNum());
+                    System.out.println("字段1" + hssfRow.getCell(1));
+                    System.out.println("字段2" + hssfRow.getCell(4));
+//这里是自己的逻辑
+                 /*   student.setUserName(name.toString());
+                    student.setPassword(pwd.toString());*/
+
+                    //list.add(student);
+                }
+            }
+        }
+    }
 
 }

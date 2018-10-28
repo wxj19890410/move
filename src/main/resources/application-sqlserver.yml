@@ -1,10 +1,4 @@
-server:
-  port: 8083
-application:
-  filePath: files
 spring:
-  profiles:
-    active: mysql
   datasource:
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     url: jdbc:sqlserver://127.0.0.1:1433; DatabaseName=wxj_test
@@ -15,4 +9,3 @@ spring:
     hibernate:
       ddl-auto: none
     show-sql: false
-
