@@ -10,10 +10,6 @@ import org.springframework.web.bind.annotation.*;
 public class HelloWorld {
 
 
-    @Autowired
-    public GirlInfo girl;
-
-
     @GetMapping(value = "/say" )
     public String say(@RequestParam(value = "id",required = false,defaultValue = "0") Integer id){
         return  "id:"+id;

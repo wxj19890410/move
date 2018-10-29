@@ -42,14 +42,6 @@ public class UserAction {
 
     private static final Logger logger = LoggerFactory.getLogger(UserAction.class);
 
-
-    @GetMapping(value = "loadInfo")
-    public Object loadInfo(String username, String password){
-        UserData userData = new UserData();
-        userService.load(username,password);
-       return userData;
-    }
-
     @GetMapping(value = "findUserData")
     public Object findUserData(){
         return userService.findAll();

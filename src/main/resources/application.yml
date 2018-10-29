@@ -4,15 +4,5 @@ application:
   filePath: file
 spring:
   profiles:
-    active: mysql
-  datasource:
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    url: jdbc:sqlserver://127.0.0.1:1433; DatabaseName=wxj_test
-    username: sa
-    password: 123456
-  jpa:
-    database: sql_server
-    hibernate:
-      ddl-auto: none
-    show-sql: false
+    active: sqlserver
 

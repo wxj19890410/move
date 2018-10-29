@@ -33,6 +33,8 @@ public class UserInfo {
 
     private Date loginDate;
 
+    private String openID;
+
 
     public Integer getUserId() {
         return userId;
@@ -88,5 +90,13 @@ public class UserInfo {
 
     public void setLoginDate(Date loginDate) {
         this.loginDate = loginDate;
+    }
+
+    public String getOpenID() {
+        return openID;
+    }
+
+    public void setOpenID(String openID) {
+        this.openID = openID;
     }
 }

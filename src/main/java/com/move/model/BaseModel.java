@@ -16,6 +16,16 @@ public class BaseModel implements Serializable {
     private String delFlag;
 
 
+    @Column(name = "edit_date")
+    private Date editDate;
+
+    @Column(name = "creat_date")
+    private Date createDate;
+
+    @Column(name = "create_user")
+    private Integer createUser;
+
+
     public Integer getId() {
         return id;
     }
@@ -31,5 +41,29 @@ public class BaseModel implements Serializable {
 
     public void setDelFlag(String delFlag) {
         this.delFlag = delFlag;
+    }
+
+    public Date getEditDate() {
+        return editDate;
+    }
+
+    public void setEditDate(Date editDate) {
+        this.editDate = editDate;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+    public Integer getCreateUser() {
+        return createUser;
+    }
+
+    public void setCreateUser(Integer createUser) {
+        this.createUser = createUser;
     }
 }

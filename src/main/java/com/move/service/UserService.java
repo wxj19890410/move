@@ -6,6 +6,6 @@ import com.move.utils.UserInfo;
 import java.util.List;
 
 public interface UserService {
-    public UserInfo load(String username, String password);
+
     public List<UserData> findAll();
 }
