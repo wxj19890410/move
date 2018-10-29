@@ -16,11 +16,15 @@ public class UserData extends BaseModel implements Serializable {
 
     private  String name;
 
+    private  String phone;
+
+    @Column(name = "open_id")
+    private  String OpenID;
+
     @Column(name = "pass_word")
     private  String passWord;
 
-    @Column(name = "user_name")
-    private  String userName;
+    private  String account;
 
 
     public String getName() {
@@ -39,11 +43,28 @@ public class UserData extends BaseModel implements Serializable {
         this.passWord = passWord;
     }
 
-    public String getUserName() {
-        return userName;
+
+    public String getPhone() {
+        return phone;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getOpenID() {
+        return OpenID;
+    }
+
+    public void setOpenID(String openID) {
+        OpenID = openID;
+    }
+
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
     }
 }

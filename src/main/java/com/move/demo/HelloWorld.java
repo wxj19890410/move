@@ -1,7 +1,6 @@
 package com.move.demo;
 
 
-import com.move.model.GirlInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

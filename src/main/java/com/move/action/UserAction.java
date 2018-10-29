@@ -20,6 +20,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -43,11 +44,9 @@ public class UserAction {
 
 
     @GetMapping(value = "loadInfo")
-    public Object loadInfo(Integer id){
+    public Object loadInfo(String username, String password){
         UserData userData = new UserData();
-        if(null!=id){
-            userData=   userService.load(id);
-        }
+        userService.load(username,password);
        return userData;
     }
 
@@ -65,6 +64,8 @@ public class UserAction {
         String fileName = file.getOriginalFilename();// 文件原名称
         System.out.println("上传的文件原名称:"+fileName);
         try {
+
+            System.out.println("路径111:"+request.getServletPath());
             // 项目在容器中实际发布运行的根路径
             String realPath = request.getSession().getServletContext().getRealPath("/");
             // 自定义的文件名称
@@ -74,13 +75,13 @@ public class UserAction {
             System.out.println("文件名称:"+file.getContentType());
             // 设置存放图片文件的路径
             path = realPath+ trueFileName;
-            System.out.println("存放图片文件的路径:"+path);
+            System.out.println("存放图片文件的路径:classpath:"+ResourceUtils.getURL("classpath:").getPath());
             // 转存文件到指定的路径
-            file.transferTo(new File(path));
+            file.transferTo(new File(ResourceUtils.getURL("classpath:").getPath()+"/files/"+ trueFileName));
             System.out.println("文件成功上传到指定目录下");
 
             //得到所有数据
-            readExcel(path);
+             readExcel(ResourceUtils.getURL("classpath:").getPath()+"/files/"+ trueFileName);
 
 
             return "文件上传成功";

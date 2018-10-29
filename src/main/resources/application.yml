@@ -1,7 +1,7 @@
 server:
   port: 8083
 application:
-  filePath: files
+  filePath: file
 spring:
   profiles:
     active: mysql
