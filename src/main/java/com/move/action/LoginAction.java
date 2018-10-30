@@ -17,11 +17,10 @@ public class LoginAction {
     @Autowired
     private LoginService loginService;
 
-    @GetMapping(value = "loadInfo")
-    public Object loadInfo(String username, String password){
-        UserData userData = new UserData();
-        loginService.load(username,password);
-        return userData;
+    @PostMapping(value = "loadInfo")
+    public Object loadInfo(String account, String password){
+        UserInfo userInfo=loginService.load(account,password);
+        return userInfo;
     }
 
     @PostMapping(value = "loadOut")

@@ -119,4 +119,32 @@ public class Utilities {
 
 		return result;
 	}
+	/**
+	 * 增加天数 小时 分钟
+	 *
+	 * @param date
+	 * @param day
+	 * @param hour
+	 * @param minute
+	 * @return
+	 */
+	public static Date addDayHourMinute(Date date, Integer day, Integer hour, Integer minute) {
+		Calendar ca = Calendar.getInstance();
+		ca.setTime(date);
+		ca.add(Calendar.DATE, Utilities.ifNull(day));
+		ca.add(Calendar.HOUR, Utilities.ifNull(hour));
+		ca.add(Calendar.MINUTE, Utilities.ifNull(minute));
+		return ca.getTime();
+	}
+	/**
+	 * 如果为空值返回0
+	 *
+	 * @param n
+	 *            整数
+	 * @return
+	 */
+	public static Integer ifNull(Integer n) {
+		return n != null ? n : 0;
+	}
+
 }

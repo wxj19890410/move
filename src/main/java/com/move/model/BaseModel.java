@@ -8,7 +8,7 @@ import java.util.Date;
 public class BaseModel implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private  Integer id;
 
 
@@ -19,7 +19,7 @@ public class BaseModel implements Serializable {
     @Column(name = "edit_date")
     private Date editDate;
 
-    @Column(name = "creat_date")
+    @Column(name = "create_date")
     private Date createDate;
 
     @Column(name = "create_user")

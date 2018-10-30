@@ -8,7 +8,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name="original_data")
+@Table(name="data_original")
 @JsonIgnoreProperties(value={"hibernateLazyInitializer","handler"})
 public class DataOriginal extends BaseModel implements Serializable {
     private static final long serialVersionUID = 1L;

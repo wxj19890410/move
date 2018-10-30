@@ -24,9 +24,9 @@ public class LoginServiveImpl implements LoginService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public UserInfo load(String username, String password) {
+    public UserInfo load(String account, String password) {
         UserInfo userInfo = new UserInfo();
-        UserData userData= userDataDao.findByName(username);
+        UserData userData= userDataDao.findByAccount(account);
         if(null!=userData){
             if(StringUtils.equals(userData.getPassWord(),password)){
                 //登录成功
@@ -44,6 +44,7 @@ public class LoginServiveImpl implements LoginService {
         userInfo.setUserId(userData.getId());
         userInfo.setLoginUuid(UUID.randomUUID().toString());
         userInfo.setLoginDate(new Date());
+        userInfo.setOperateDate(new Date());
 
         synchronized (Globals.USER_INFOS) {
             List<String> keyList = Lists.newArrayList();

@@ -35,6 +35,12 @@ public class UserInfo {
 
     private String openID;
 
+    /**
+     * 操作日期
+     */
+    private Date operateDate;
+
+
 
     public Integer getUserId() {
         return userId;
@@ -98,5 +104,13 @@ public class UserInfo {
 
     public void setOpenID(String openID) {
         this.openID = openID;
+    }
+
+    public Date getOperateDate() {
+        return operateDate;
+    }
+
+    public void setOperateDate(Date operateDate) {
+        this.operateDate = operateDate;
     }
 }

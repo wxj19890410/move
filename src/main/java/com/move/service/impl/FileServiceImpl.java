@@ -31,7 +31,7 @@ public class FileServiceImpl implements FileService {
     private SysFileDao sysFileDao;
 
     @Autowired
-    private DataOriginalDao originalDataDao;
+    private DataOriginalDao dataOriginalDao;
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
@@ -44,14 +44,14 @@ public class FileServiceImpl implements FileService {
         Utilities.setUserInfo(sysFile,userInfo);
         sysFileDao.save(sysFile);
         try {
-            readExcel(path,name);
+            readExcel(path,name,sysFile.getId(),sysFile.getMonth(),userInfo);
         }catch (Exception e) {
         }
         return sysFile;
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public void readExcel(String path,String name) throws Exception  {
+    public void readExcel(String path,String name,Integer fileId ,String month,UserInfo userInfo) throws Exception  {
         InputStream is = new FileInputStream(new File(ResourceUtils.getURL("classpath:").getPath()+path));
         Workbook hssfWorkbook = null;
         if (name.endsWith("xlsx")) {
@@ -59,7 +59,7 @@ public class FileServiceImpl implements FileService {
         } else if (name.endsWith("xls")) {
             hssfWorkbook = new HSSFWorkbook(is);//Excel 2003
         }
-        DataOriginal originalData = null;
+        DataOriginal dataOriginal = null;
         List<DataOriginal> list = new ArrayList<DataOriginal>();
         // 循环工作表Sheet
         for (int numSheet = 0; numSheet < hssfWorkbook.getNumberOfSheets(); numSheet++) {
@@ -71,19 +71,23 @@ public class FileServiceImpl implements FileService {
             for (int rowNum = 1; rowNum <= hssfSheet.getLastRowNum(); rowNum++) {
                 Row hssfRow = hssfSheet.getRow(rowNum);
                 if (hssfRow != null) {
-                    if(hssfRow.getRowNum()>1){
-                        originalData = new DataOriginal();
-                        originalData.setValue1(Integer.parseInt(hssfRow.getCell(1).toString()));
-                        originalData.setValue2(Integer.parseInt(hssfRow.getCell(2).toString()));
-                        originalData.setValue3(Integer.parseInt(hssfRow.getCell(3).toString()));
-                        originalData.setValue4(Integer.parseInt(hssfRow.getCell(4).toString()));
-                        originalData.setValue5(Integer.parseInt(hssfRow.getCell(5).toString()));
-                        originalData.setValue6(Integer.parseInt(hssfRow.getCell(6).toString()));
-                        list.add(originalData);
+                    if(hssfRow.getRowNum()>0){
+                        dataOriginal = new DataOriginal();
+                        dataOriginal.setValue1((new Double(hssfRow.getCell(1).toString())).intValue());
+                        dataOriginal.setValue2((new Double(hssfRow.getCell(2).toString())).intValue());
+                        dataOriginal.setValue3((new Double(hssfRow.getCell(3).toString())).intValue());
+                        dataOriginal.setValue4((new Double(hssfRow.getCell(4).toString())).intValue());
+                        dataOriginal.setValue5((new Double(hssfRow.getCell(5).toString())).intValue());
+                        dataOriginal.setValue6((new Double(hssfRow.getCell(6).toString())).intValue());
+                        dataOriginal.setFileId(fileId);
+                        dataOriginal.setMonth(month);
+                        Utilities.setUserInfo(dataOriginal,userInfo);
+                        list.add(dataOriginal);
                     }
                 }
             }
-            originalDataDao.saveAll(list);
+            //System.out.print("行数:"+list.size());
+            dataOriginalDao.saveAll(list);
         }
     }
 }
