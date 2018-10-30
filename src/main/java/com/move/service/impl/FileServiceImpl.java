@@ -44,44 +44,33 @@ public class FileServiceImpl implements FileService {
         Utilities.setUserInfo(sysFile,userInfo);
         sysFileDao.save(sysFile);
         try {
-            readExcel(path);
+            readExcel(path,name);
         }catch (Exception e) {
         }
-        return null;
+        return sysFile;
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public void readExcel(String path) throws Exception  {
+    public void readExcel(String path,String name) throws Exception  {
         InputStream is = new FileInputStream(new File(ResourceUtils.getURL("classpath:").getPath()+path));
         Workbook hssfWorkbook = null;
-        if (path.endsWith("xlsx")) {
+        if (name.endsWith("xlsx")) {
             hssfWorkbook = new XSSFWorkbook(is);//Excel 2007
-        } else if (path.endsWith("xls")) {
+        } else if (name.endsWith("xls")) {
             hssfWorkbook = new HSSFWorkbook(is);//Excel 2003
-
         }
-        // HSSFWorkbook hssfWorkbook = new HSSFWorkbook(is);
-        // XSSFWorkbook hssfWorkbook = new XSSFWorkbook(is);
         DataOriginal originalData = null;
         List<DataOriginal> list = new ArrayList<DataOriginal>();
         // 循环工作表Sheet
         for (int numSheet = 0; numSheet < hssfWorkbook.getNumberOfSheets(); numSheet++) {
-            //HSSFSheet hssfSheet = hssfWorkbook.getSheetAt(numSheet);
             Sheet hssfSheet = hssfWorkbook.getSheetAt(numSheet);
             if (hssfSheet == null) {
                 continue;
             }
             // 循环行Row
             for (int rowNum = 1; rowNum <= hssfSheet.getLastRowNum(); rowNum++) {
-                //HSSFRow hssfRow = hssfSheet.getRow(rowNum);
                 Row hssfRow = hssfSheet.getRow(rowNum);
                 if (hssfRow != null) {
-                    //
-                    //HSSFCell name = hssfRow.getCell(0);
-                    //HSSFCell pwd = hssfRow.getCell(1);
-                    Cell name = hssfRow.getCell(0);
-                    Cell pwd = hssfRow.getCell(1);
-                    System.out.println("字段" + hssfRow.getRowNum());
                     if(hssfRow.getRowNum()>1){
                         originalData = new DataOriginal();
                         originalData.setValue1(Integer.parseInt(hssfRow.getCell(1).toString()));

@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://192.168.10.125:3306/wej_test
+    url: jdbc:mariadb://192.168.10.125:3306/wxj_test2
     username: jq
     password: jq
   jpa:

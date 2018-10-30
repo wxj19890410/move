@@ -3,6 +3,7 @@ package com.move.action;
 import com.move.service.FileService;
 import com.move.service.LoginService;
 import com.move.utils.UserInfo;
+import com.move.utils.Utilities;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -22,6 +23,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(value="file")
@@ -37,32 +40,22 @@ public class FileAction {
         String path = null;// 文件路径
         String type = null;// 文件类型
         String fileName = file.getOriginalFilename();// 文件原名称
-        System.out.println("上传的文件原名称:"+fileName);
         try {
-
-            System.out.println("路径111:"+request.getServletPath());
-            // 项目在容器中实际发布运行的根路径
-            String realPath = request.getSession().getServletContext().getRealPath("/");
+            String rootPath = ResourceUtils.getURL("classpath:").getPath();
             // 自定义的文件名称
             String trueFileName = file.getOriginalFilename();
 
-            System.out.println("文件名称111:"+file.getOriginalFilename());
-            System.out.println("文件名称:"+file.getContentType());
-            // 设置存放图片文件的路径
-            path = realPath+ trueFileName;
-            System.out.println("存放图片文件的路径:classpath:"+ ResourceUtils.getURL("classpath:").getPath());
+            List<String> names = Utilities.split(trueFileName,".");
+            if(names.size()>1){
+                type = names.get(names.size()-1);
+            }
+            // 设置存放文件的路径
+            path ="/files/"+ UUID.randomUUID().toString();
             // 转存文件到指定的路径
-            file.transferTo(new File(ResourceUtils.getURL("classpath:").getPath()+"/files/"+ trueFileName));
-            System.out.println("文件成功上传到指定目录下");
-
+            file.transferTo(new File(rootPath+path));
 
             String finalPath = "/files/"+ trueFileName;
-
-            fileService.setFileData(null,null,path,userInfo);
-            //得到所有数据
-           //  readExcel(ResourceUtils.getURL("classpath:").getPath()+"/files/"+ trueFileName);
-
-
+            fileService.setFileData(trueFileName,type,path,userInfo);
             return "文件上传成功";
         } catch (Exception e) {
             e.printStackTrace();

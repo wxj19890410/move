@@ -1,6 +1,8 @@
 package com.move.utils;
 
+import com.google.common.collect.Lists;
 import com.move.model.BaseModel;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
@@ -95,4 +97,26 @@ public class Utilities {
 	}
 
 
+	/**
+	 * 分隔字符串
+	 *
+	 * @param str
+	 *            字符串
+	 * @param separator
+	 *            分隔符
+	 * @return
+	 */
+	public static List<String> split(String str, String separator) {
+		List<String> result = Lists.newArrayList();
+
+		if (!StringUtils.isEmpty(str)) {
+			for (String value : StringUtils.split(str, separator)) {
+				if (!StringUtils.isEmpty(value)) {
+					result.add(value);
+				}
+			}
+		}
+
+		return result;
+	}
 }
