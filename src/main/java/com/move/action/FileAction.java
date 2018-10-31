@@ -53,10 +53,8 @@ public class FileAction {
             path ="/files/"+ UUID.randomUUID().toString();
             // 转存文件到指定的路径
             file.transferTo(new File(rootPath+path));
-
             String finalPath = "/files/"+ trueFileName;
-            fileService.setFileData(trueFileName,type,path,userInfo);
-            return "文件上传成功";
+            return fileService.setFileData(trueFileName,type,path,userInfo);
         } catch (Exception e) {
             e.printStackTrace();
             return "文件上传失败";

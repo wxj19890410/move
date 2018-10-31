@@ -17,6 +17,10 @@ import java.util.*;
  * 
  */
 public class Utilities {
+
+	public static UserInfo getUserInfo(String loginUuid) {
+		return Globals.USER_INFOS.get(loginUuid);
+	}
 	/**
 	 * 日期转换成字符串
 	 *

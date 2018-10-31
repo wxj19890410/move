@@ -5,6 +5,8 @@ import com.move.exception.NotLogedInException;
 import com.move.utils.Globals;
 import com.move.utils.UserInfo;
 import com.move.utils.Utilities;
+import com.sun.xml.internal.ws.client.ResponseContext;
+import com.sun.xml.internal.ws.client.ResponseContextReceiver;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Date;
@@ -57,6 +60,7 @@ public class HttpAspect {
     }
     @After("log()")
     public void doAfter() {
+
 
     }
 }

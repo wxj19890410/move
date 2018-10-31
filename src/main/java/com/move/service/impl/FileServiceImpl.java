@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -41,6 +42,7 @@ public class FileServiceImpl implements FileService {
         sysFile.setExt(ext);
         sysFile.setOpenId(userInfo.getOpenID());
         sysFile.setPath(path);
+        sysFile.setMonth(Utilities.formatDate(new Date(), "yyyy-MM"));
         Utilities.setUserInfo(sysFile,userInfo);
         sysFileDao.save(sysFile);
         try {
@@ -73,12 +75,36 @@ public class FileServiceImpl implements FileService {
                 if (hssfRow != null) {
                     if(hssfRow.getRowNum()>0){
                         dataOriginal = new DataOriginal();
-                        dataOriginal.setValue1((new Double(hssfRow.getCell(1).toString())).intValue());
-                        dataOriginal.setValue2((new Double(hssfRow.getCell(2).toString())).intValue());
-                        dataOriginal.setValue3((new Double(hssfRow.getCell(3).toString())).intValue());
-                        dataOriginal.setValue4((new Double(hssfRow.getCell(4).toString())).intValue());
-                        dataOriginal.setValue5((new Double(hssfRow.getCell(5).toString())).intValue());
-                        dataOriginal.setValue6((new Double(hssfRow.getCell(6).toString())).intValue());
+                        if (matchesString(hssfRow.getCell(1)))
+                            dataOriginal.setValue1((new Double(hssfRow.getCell(1).toString())).intValue());
+                        else{
+                            dataOriginal.setValue1(0);
+                        }
+                        if (matchesString(hssfRow.getCell(2)))
+                            dataOriginal.setValue2((new Double(hssfRow.getCell(2).toString())).intValue());
+                        else{
+                            dataOriginal.setValue2(0);
+                        }
+                        if (matchesString(hssfRow.getCell(3)))
+                            dataOriginal.setValue3((new Double(hssfRow.getCell(3).toString())).intValue());
+                        else{
+                            dataOriginal.setValue3(0);
+                        }
+                        if (matchesString(hssfRow.getCell(4)))
+                            dataOriginal.setValue4((new Double(hssfRow.getCell(4).toString())).intValue());
+                        else{
+                            dataOriginal.setValue4(0);
+                        }
+                        if (matchesString(hssfRow.getCell(5)))
+                            dataOriginal.setValue5((new Double(hssfRow.getCell(5).toString())).intValue());
+                        else{
+                            dataOriginal.setValue5(0);
+                        }
+                        if (matchesString(hssfRow.getCell(6)))
+                            dataOriginal.setValue6((new Double(hssfRow.getCell(6).toString())).intValue());
+                        else{
+                            dataOriginal.setValue6(0);
+                        }
                         dataOriginal.setFileId(fileId);
                         dataOriginal.setMonth(month);
                         Utilities.setUserInfo(dataOriginal,userInfo);
@@ -89,5 +115,9 @@ public class FileServiceImpl implements FileService {
             //System.out.print("行数:"+list.size());
             dataOriginalDao.saveAll(list);
         }
+    }
+    private Boolean matchesString (Object data){
+        String reg = "^[0-9]+(.[0-9]+)?$";
+        return data!= null && !"".equals(data.toString().trim())&&data.toString().matches(reg);
     }
 }
