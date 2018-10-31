@@ -17,6 +17,9 @@ import java.util.*;
  * 
  */
 public class Utilities {
+	public static String format(String str, Object... args) {
+		return MessageFormat.format(str.replaceAll("'", "''"), args);
+	}
 	/**
 	 * 日期转换成字符串
 	 *
