@@ -17,13 +17,9 @@ public class OrgAction {
     @Autowired
     private OrgService orgService;
 
-    @PostMapping(value = "createGroup")
-    public Object createGroup(UserInfo userInfo){
-        return orgService.createGroup(userInfo);
-    }
-    @PostMapping(value = "updaGroup")
-    public Object updaGroup(Integer id,String name,UserInfo userInfo){
-        return orgService.updaGroup(id,name,userInfo);
+    @PostMapping(value = "saveGroup")
+    public Object saveGroup(Integer id,String name,UserInfo userInfo){
+        return orgService.saveGroup(id,name,userInfo);
     }
 
     @PostMapping(value = "deleteGroup")
@@ -50,7 +46,7 @@ public class OrgAction {
     @PostMapping(value = "deleteDept")
     public Object deleteDept(Integer id,UserInfo userInfo){
          orgService.deleteDept(id,userInfo);
-        return "success";
+        return id;
     }
 
     @GetMapping(value = "findDeptAll")

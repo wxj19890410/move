@@ -7,6 +7,7 @@ import com.move.model.OrgGroup;
 import com.move.service.OrgService;
 import com.move.utils.UserInfo;
 import com.move.utils.Utilities;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -25,15 +26,6 @@ public class OrgServiceImpl implements OrgService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public OrgGroup createGroup(UserInfo userInfo) {
-        OrgGroup group = new OrgGroup();
-        group.setName("新建组");
-        Utilities.setUserInfo(group,userInfo);
-        return orgGroupDao.save(group);
-    }
-
-    @Override
-    @Transactional(propagation = Propagation.REQUIRED)
     public OrgDepartment createDept(Integer parentId, UserInfo userInfo) {
         OrgDepartment department = new OrgDepartment();
         department.setName("新建部门");
@@ -46,9 +38,14 @@ public class OrgServiceImpl implements OrgService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public OrgGroup updaGroup(Integer id, String name, UserInfo userInfo) {
-        OrgGroup group = orgGroupDao.getOne(id);
+    public OrgGroup saveGroup(Integer id, String name, UserInfo userInfo) {
+        OrgGroup group = new OrgGroup();
+        if(Utilities.isValidId(id)){
+            group = orgGroupDao.getOne(id);
+
+        }
         group.setName(name);
+        Utilities.setUserInfo(group,userInfo);
         return orgGroupDao.save(group);
     }
 
