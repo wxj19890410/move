@@ -5,7 +5,7 @@ application:
 spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://127.0.0.1:3305/wxj_test
+    url: jdbc:mariadb://127.0.0.1:3305/wxj_test?characterEncoding=utf-8
     username: root
     password: 123456
   jpa:
