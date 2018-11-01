@@ -1,12 +1,15 @@
 package com.move.service.impl;
 
 import com.google.common.collect.Lists;
-import com.move.dao.UserDao;
-import com.move.dao.impl.UserDataDao;
+import com.move.dao.OrgRelationDao;
+import com.move.dao.UseDataDao;
+import com.move.model.OrgRelation;
 import com.move.model.UserData;
 import com.move.service.LoginService;
 import com.move.utils.*;
-import org.apache.commons.codec.binary.StringUtils;
+import com.sun.jna.platform.win32.WinDef.UINT_PTR;
+
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -19,66 +22,72 @@ import java.util.UUID;
 @Service
 public class LoginServiveImpl implements LoginService {
 
-    @Autowired
-    private UserDataDao userDataDao;
+	@Autowired
+	private UseDataDao useDataDao;
 
-    @Autowired
-    private UserDao userDao;
+	@Autowired
+	private OrgRelationDao orgRelationDao;
 
-    @Override
-    @Transactional(propagation = Propagation.REQUIRED)
-    public UserInfo load(String account, String password) {
-        QueryBuilder qb = new QueryBuilder();
-        QueryUtils.addColumn(qb,"t.id","id");
-        QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-       // QueryUtils.addWhere(qb, "and t.account = {0}", account);
-       // QueryUtils.addWhere(qb, "and t.password = {0}", password);
-        UserData userData = new UserData();
-        userData.setAccount("2222");
-        userDao.datagrid(qb);
-        System.out.print(userDao.datagrid(qb).getRows());
-        UserInfo userInfo = new UserInfo();
-        //UserData userData= userDataDao.findByAccount(account);
-        if(null!=userData){
-            if(StringUtils.equals(userData.getPassWord(),password)){
-                //登录成功
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public UserInfo load(String account, String password, String openId) {
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+		if (StringUtils.isNotBlank(openId)) {
+			QueryUtils.addWhere(qb, "and t.openId = {0}", openId);
+		} else if (StringUtils.isNotBlank(account) && StringUtils.isNotBlank(password)) {
+			QueryUtils.addWhere(qb, "and t.account = {0}", account);
+			QueryUtils.addWhere(qb, "and t.passWord = {0}", password);
 
+		}
+		UserData userData = useDataDao.get(qb);
+		OrgRelation relation = new OrgRelation();
+		UserInfo userInfo = new UserInfo();
+		if (null != userData) {
+			if (StringUtils.isNotBlank(userData.getOpenID())) {
+				qb = new QueryBuilder();
+				QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+				QueryUtils.addWhere(qb, "and t.openId = {0}", userData.getOpenID());
+				relation = orgRelationDao.get(qb);
+			} else {
+				relation = null;
+			}
+		} else {
+			// 账号不存在
+		}
+		if (null != relation) {
+			userInfo.setGroupId(relation.getGroupId());
+			userInfo.setDeptId(relation.getDeptId());
+			userInfo.setGroupName("第一组");
+		}
+		userInfo.setOpenID(userData.getOpenID());
+		userInfo.setName(userData.getName());
+		userInfo.setUserId(userData.getId());
+		userInfo.setLoginUuid(UUID.randomUUID().toString());
+		userInfo.setLoginDate(new Date());
+		userInfo.setOperateDate(new Date());
 
-            }else{
-                //密码错误
-            }
-        }else{
-            //账号不存在
-        }
-        userInfo.setGroupId(11);
-        userInfo.setGroupName("第一组");
-        userInfo.setName(userData.getName());
-        userInfo.setUserId(userData.getId());
-        userInfo.setLoginUuid(UUID.randomUUID().toString());
-        userInfo.setLoginDate(new Date());
-        userInfo.setOperateDate(new Date());
+		synchronized (Globals.USER_INFOS) {
+			List<String> keyList = Lists.newArrayList();
+			for (String key : Globals.USER_INFOS.keySet()) {
+				if (Globals.USER_INFOS.get(key).getUserId().equals(userData.getId())) {
+					keyList.add(key);
+				}
+			}
+			if (keyList.size() > 0) {
+				for (String key : keyList) {
+					Globals.USER_INFOS.remove(key);
+				}
+			}
+			Globals.USER_INFOS.put(userInfo.getLoginUuid(), userInfo);
+		}
 
-        synchronized (Globals.USER_INFOS) {
-            List<String> keyList = Lists.newArrayList();
-            for (String key : Globals.USER_INFOS.keySet()) {
-                if (Globals.USER_INFOS.get(key).getUserId().equals(userData.getId())) {
-                    keyList.add(key);
-                }
-            }
-            if (keyList.size() > 0) {
-                for (String key : keyList) {
-                    Globals.USER_INFOS.remove(key);
-                }
-            }
-            Globals.USER_INFOS.put(userInfo.getLoginUuid(), userInfo);
-        }
-        return userInfo;
-    }
+		return userInfo;
+	}
 
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void loadOut(UserInfo userInfo) {
 
-    @Override
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void loadOut(UserInfo userInfo) {
-
-    }
+	}
 }

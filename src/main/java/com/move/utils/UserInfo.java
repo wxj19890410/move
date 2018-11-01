@@ -39,7 +39,13 @@ public class UserInfo {
      * 操作日期
      */
     private Date operateDate;
+    
+    /**
+     * 组名
+     */
+    private Integer deptId;
 
+    
 
 
     public Integer getUserId() {
@@ -113,4 +119,12 @@ public class UserInfo {
     public void setOperateDate(Date operateDate) {
         this.operateDate = operateDate;
     }
+
+	public Integer getDeptId() {
+		return deptId;
+	}
+
+	public void setDeptId(Integer deptId) {
+		this.deptId = deptId;
+	}
 }

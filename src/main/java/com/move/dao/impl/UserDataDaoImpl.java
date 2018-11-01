@@ -1,11 +1,11 @@
 package com.move.dao.impl;
 
-import com.move.dao.UserDao;
+import com.move.dao.UseDataDao;
 import com.move.model.UserData;
 import org.springframework.stereotype.Repository;
 
 
 @Repository
-public class UserDaoImpl extends BaseDaoImpl<UserData> implements UserDao {
+public class UserDataDaoImpl extends BaseDaoImpl<UserData> implements UseDataDao {
 	
 }

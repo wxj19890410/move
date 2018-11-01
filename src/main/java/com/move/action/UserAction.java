@@ -1,11 +1,12 @@
 package com.move.action;
 
-
 import com.alibaba.druid.support.json.JSONUtils;
 import com.move.model.UserData;
 import com.move.service.UserService;
-
+import com.move.utils.DictUtils;
 import com.move.utils.Properties;
+import com.move.utils.QueryBuilder;
+import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
 import com.move.utils.Utilities;
 import org.apache.commons.fileupload.FileItem;
@@ -36,22 +37,24 @@ import java.util.HashMap;
 import java.util.List;
 
 @RestController
-@RequestMapping(value="user")
+@RequestMapping(value = "user")
 public class UserAction {
-    @Autowired
-    private UserService userService;
+	@Autowired
+	private UserService userService;
 
-    private static final Logger logger = LoggerFactory.getLogger(UserAction.class);
+	private static final Logger logger = LoggerFactory.getLogger(UserAction.class);
 
-    @GetMapping(value = "findUserData")
-    public Object findUserData(){
-        return userService.findAll();
-    }
+	@GetMapping(value = "findUserList")
+	public Object findUserData() {
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addColumn(qb, "t.id", "id");
+		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+		return userService.findUsers(qb);
+	}
 
-
-    @GetMapping(value = "setUserRelation")
-    public Object setUserRelation(Integer userId,Integer deptId,Integer groupId, UserInfo userInfo){
-        return userService.setUserRelation(userId,deptId,groupId,userInfo);
-    }
+	@GetMapping(value = "setUserRelation")
+	public Object setUserRelation(Integer userId, Integer deptId, Integer groupId, UserInfo userInfo) {
+		return userService.setUserRelation(userId, deptId, groupId, userInfo);
+	}
 
 }

@@ -18,8 +18,8 @@ public class LoginAction {
     private LoginService loginService;
 
     @PostMapping(value = "loadInfo")
-    public Object loadInfo(String account, String password){
-        UserInfo userInfo=loginService.load(account,password);
+    public Object loadInfo(String account, String password, String openId){
+        UserInfo userInfo=loginService.load(account,password,openId);
         return userInfo;
     }
 
