@@ -29,13 +29,14 @@ public class LoginServiveImpl implements LoginService {
     @Transactional(propagation = Propagation.REQUIRED)
     public UserInfo load(String account, String password) {
         QueryBuilder qb = new QueryBuilder();
+        QueryUtils.addColumn(qb,"t.id","id");
         QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-        QueryUtils.addWhere(qb, "and t.account = {0}", account);
-        QueryUtils.addWhere(qb, "and t.password = {0}", password);
+       // QueryUtils.addWhere(qb, "and t.account = {0}", account);
+       // QueryUtils.addWhere(qb, "and t.password = {0}", password);
         UserData userData = new UserData();
         userData.setAccount("2222");
-        userDao.save(userData);
-        System.out.print(userData);
+        userDao.datagrid(qb);
+        System.out.print(userDao.datagrid(qb).getRows());
         UserInfo userInfo = new UserInfo();
         //UserData userData= userDataDao.findByAccount(account);
         if(null!=userData){

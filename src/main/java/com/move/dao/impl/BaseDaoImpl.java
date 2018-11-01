@@ -5,15 +5,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.move.action.UserAction;
 import com.move.dao.BaseDao;
 import com.move.utils.Datagrid;
 import com.move.utils.HibernateUtils;
 import com.move.utils.QueryBuilder;
 import com.move.utils.Utilities;
-import org.hibernate.Query;
+import javax.persistence.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.transform.Transformers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,8 +24,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Lists;
 
+import javax.persistence.EntityManagerFactory;
+
 @NoRepositoryBean
 public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
+
 
 
 
@@ -41,6 +47,8 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 	public final String PREFIX_PARAMS = "p";
 
 
+	@Autowired
+	private EntityManagerFactory sessionFactory;
 
 	@SuppressWarnings("unchecked")
 	public BaseDaoImpl() {
@@ -58,7 +66,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 	}
 
 	protected Session getSession() {
-		return HibernateUtils.getSessionFactory().getCurrentSession();
+		return sessionFactory.createEntityManager().unwrap(org.hibernate.Session.class);
 	}
 
 	protected Query setParams(Query query, List<Object> params, String prefix) {
@@ -70,8 +78,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 					if (collection.size() == 0) {
 						collection.add(null);
 					}
-
-					query.setParameterList(prefix + (i + 1), collection);
+					query.setParameter(prefix + (i + 1), collection);
 				} else {
 					query.setParameter(prefix + (i + 1), params.get(i));
 				}
@@ -186,7 +193,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 		setWhereParams(query, qb);
 		setFirstResult(query, qb);
 		setMaxResults(query, qb);
-		return query.list();
+		return query.getResultList();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -198,7 +205,8 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 		setWhereParams(query, qb);
 		setFirstResult(query, qb);
 		setMaxResults(query, qb);
-		return query.setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
+
+		return query.getResultList();
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -206,7 +214,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 		String hql = Utilities.format(HQL_COUNT, qb.getWhere(), qb.getJoin());
 		Query query = getSession().createQuery(hql);
 		setWhereParams(query, qb);
-		return (Integer) query.uniqueResult();
+		return (Integer) query.getFirstResult();
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -226,7 +234,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 	public List<T> hqlFind(String hql, Object... params) {
 		Query query = getSession().createQuery(hql);
 		setParams(query, Lists.newArrayList(params), PREFIX_PARAMS);
-		return query.list();
+		return query.getResultList();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -234,7 +242,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 	public List<Map<String, Object>> hqlListMap(String hql, Object... params) {
 		Query query = getSession().createQuery(hql);
 		setParams(query, Lists.newArrayList(params), PREFIX_PARAMS);
-		return query.setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
+		return query.getResultList();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -242,7 +250,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 	public <U> U hqlUnique(String hql, Object... params) {
 		Query query = getSession().createQuery(hql);
 		setParams(query, Lists.newArrayList(params), PREFIX_PARAMS);
-		return (U) query.uniqueResult();
+		return (U) query.getSingleResult();
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -257,7 +265,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 	public List<T> sqlFind(String sql, Object... params) {
 		Query query = getSession().createSQLQuery(sql);
 		setParams(query, Lists.newArrayList(params), PREFIX_PARAMS);
-		return query.list();
+		return query.getResultList();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -265,7 +273,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 	public List<Map<String, Object>> sqlListMap(String sql, Object... params) {
 		Query query = getSession().createSQLQuery(sql);
 		setParams(query, Lists.newArrayList(params), PREFIX_PARAMS);
-		return query.setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).list();
+		return query.getResultList();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -273,7 +281,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 	public <U> U sqlUnique(String sql, Object... params) {
 		Query query = getSession().createSQLQuery(sql);
 		setParams(query, Lists.newArrayList(params), PREFIX_PARAMS);
-		return (U) query.uniqueResult();
+		return (U) query.getSingleResult();
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)

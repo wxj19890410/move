@@ -3,8 +3,15 @@ server:
 application:
   filePath: file
 spring:
-  profiles:
-    active: mysql
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://127.0.0.1:3305/wxj_test
+    username: root
+    password: 123456
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
 
 
 
