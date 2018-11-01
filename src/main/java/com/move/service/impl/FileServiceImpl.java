@@ -1,5 +1,6 @@
 package com.move.service.impl;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
 import com.move.dao.impl.DataOriginalDao;
 import com.move.dao.impl.SysFileDao;
 import com.move.model.DataOriginal;
@@ -36,6 +37,7 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public SysFile setFileData(String name,String ext,String path, UserInfo userInfo) {
+
         SysFile sysFile = new SysFile();
         sysFile.setName(name);
         sysFile.setExt(ext);

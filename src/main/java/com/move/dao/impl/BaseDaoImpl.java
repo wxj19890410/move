@@ -6,22 +6,26 @@ import java.util.List;
 import java.util.Map;
 
 import com.move.dao.BaseDao;
+import com.move.utils.Datagrid;
+import com.move.utils.HibernateUtils;
+import com.move.utils.QueryBuilder;
+import com.move.utils.Utilities;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.transform.Transformers;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Lists;
 
-import sample.dao.BaseDao;
-import sample.utils.Datagrid;
-import sample.utils.QueryBuilder;
-import sample.utils.Utilities;
+@NoRepositoryBean
+public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 
-public abstract class BaseDaoImpl<T> implements BaseDao<T> {
+
+
 	public final Class<T> modelClass;
 
 	public final String HQL_UPDATE;
@@ -36,8 +40,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
 
 	public final String PREFIX_PARAMS = "p";
 
-	@Autowired
-	private SessionFactory sessionFactory;
+
 
 	@SuppressWarnings("unchecked")
 	public BaseDaoImpl() {
@@ -55,7 +58,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
 	}
 
 	protected Session getSession() {
-		return sessionFactory.getCurrentSession();
+		return HibernateUtils.getSessionFactory().getCurrentSession();
 	}
 
 	protected Query setParams(Query query, List<Object> params, String prefix) {
@@ -107,6 +110,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
 	public T load(Integer id) {
 		return (T) getSession().load(modelClass, id);
 	}
+
 
 	@SuppressWarnings("unchecked")
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -172,6 +176,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
 		setWhereParams(query, qb);
 		return query.executeUpdate();
 	}
+
 
 	@SuppressWarnings("unchecked")
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)

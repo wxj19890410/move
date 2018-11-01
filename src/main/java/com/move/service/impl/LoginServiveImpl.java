@@ -1,11 +1,11 @@
 package com.move.service.impl;
 
 import com.google.common.collect.Lists;
+import com.move.dao.UserDao;
 import com.move.dao.impl.UserDataDao;
 import com.move.model.UserData;
 import com.move.service.LoginService;
-import com.move.utils.Globals;
-import com.move.utils.UserInfo;
+import com.move.utils.*;
 import org.apache.commons.codec.binary.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,11 +22,22 @@ public class LoginServiveImpl implements LoginService {
     @Autowired
     private UserDataDao userDataDao;
 
+    @Autowired
+    private UserDao userDao;
+
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public UserInfo load(String account, String password) {
+        QueryBuilder qb = new QueryBuilder();
+        QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+        QueryUtils.addWhere(qb, "and t.account = {0}", account);
+        QueryUtils.addWhere(qb, "and t.password = {0}", password);
+        UserData userData = new UserData();
+        userData.setAccount("2222");
+        userDao.save(userData);
+        System.out.print(userData);
         UserInfo userInfo = new UserInfo();
-        UserData userData= userDataDao.findByAccount(account);
+        //UserData userData= userDataDao.findByAccount(account);
         if(null!=userData){
             if(StringUtils.equals(userData.getPassWord(),password)){
                 //登录成功

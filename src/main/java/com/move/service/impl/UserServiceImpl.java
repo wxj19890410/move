@@ -1,5 +1,6 @@
 package com.move.service.impl;
 
+import com.move.dao.UserDao;
 import com.move.dao.impl.UserDataDao;
 import com.move.model.OrgRelation;
 import com.move.model.UserData;
@@ -16,6 +17,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserDataDao userDataDao;
+
+
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
