@@ -22,13 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.google.common.collect.Lists;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 @NoRepositoryBean
-public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
-
-
-
+public abstract class BaseDaoImpl<T> implements BaseDao<T> {
 
 	public final Class<T> modelClass;
 
@@ -44,9 +42,8 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 
 	public final String PREFIX_PARAMS = "p";
 
-
 	@Autowired
-	private EntityManagerFactory sessionFactory;
+	private EntityManager entityManager;
 
 	@SuppressWarnings("unchecked")
 	public BaseDaoImpl() {
@@ -64,7 +61,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 	}
 
 	protected Session getSession() {
-		return sessionFactory.createEntityManager().unwrap(org.hibernate.Session.class);
+		return entityManager.unwrap(org.hibernate.Session.class);
 	}
 
 	protected Query setParams(Query query, List<Object> params, String prefix) {
@@ -115,7 +112,6 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 	public T load(Integer id) {
 		return (T) getSession().load(modelClass, id);
 	}
-
 
 	@SuppressWarnings("unchecked")
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -182,7 +178,6 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 		return query.executeUpdate();
 	}
 
-
 	@SuppressWarnings("unchecked")
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public List<T> find(QueryBuilder qb) {
@@ -197,7 +192,8 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T>  {
 	@SuppressWarnings("unchecked")
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public List<Map<String, Object>> listMap(QueryBuilder qb) {
-		String hql = Utilities.format(HQL_LIST_MAP, qb.getColumn(), qb.getWhere(), qb.getOrder(), qb.getGroup(), qb.getHaving(), qb.getJoin());
+		String hql = Utilities.format(HQL_LIST_MAP, qb.getColumn(), qb.getWhere(), qb.getOrder(), qb.getGroup(),
+				qb.getHaving(), qb.getJoin());
 		Query query = getSession().createQuery(hql);
 		setColumnParams(query, qb);
 		setWhereParams(query, qb);

@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional
     public List<UserData> findUsers(QueryBuilder qb) {
         return useDataDao.find(qb);
     }
