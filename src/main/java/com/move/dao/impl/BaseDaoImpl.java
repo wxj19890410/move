@@ -9,7 +9,7 @@ import com.move.dao.BaseDao;
 import com.move.utils.Datagrid;
 import com.move.utils.QueryBuilder;
 import com.move.utils.Utilities;
-import javax.persistence.Query;
+import org.hibernate.query.*;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.transform.Transformers;
@@ -199,8 +199,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
 		setWhereParams(query, qb);
 		setFirstResult(query, qb);
 		setMaxResults(query, qb);
-
-		return query.getResultList();
+		return query.setResultTransformer(Transformers.ALIAS_TO_ENTITY_MAP).getResultList();
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -208,7 +207,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
 		String hql = Utilities.format(HQL_COUNT, qb.getWhere(), qb.getJoin());
 		Query query = getSession().createQuery(hql);
 		setWhereParams(query, qb);
-		return (Integer) query.getFirstResult();
+		return (Integer) query.uniqueResult();
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)

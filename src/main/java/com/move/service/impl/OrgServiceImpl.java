@@ -5,6 +5,7 @@ import com.move.dao.OrgGroupDao;
 import com.move.model.OrgDepartment;
 import com.move.model.OrgGroup;
 import com.move.service.OrgService;
+import com.move.utils.Datagrid;
 import com.move.utils.QueryBuilder;
 import com.move.utils.UserInfo;
 import com.move.utils.Utilities;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class OrgServiceImpl implements OrgService {
@@ -79,6 +81,31 @@ public class OrgServiceImpl implements OrgService {
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public List<OrgDepartment> findDept(QueryBuilder qb) {
 		return orgDepartmentDao.find(qb);
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+	public List<Map<String, Object>> findGroupMap(QueryBuilder qb) {
+		// TODO Auto-generated method stub
+		return orgGroupDao.listMap(qb);
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+	public List<Map<String, Object>> findDeptMap(QueryBuilder qb) {
+		return orgDepartmentDao.listMap(qb);
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+	public Datagrid groupDataGrid(QueryBuilder qb) {
+		return orgGroupDao.datagrid(qb);
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+	public Datagrid deptDataGrid(QueryBuilder qb) {
+		return orgDepartmentDao.datagrid(qb);
 	}
 
 }

@@ -58,4 +58,49 @@ public class OrgAction {
 		//QueryUtils.addWhereIfNotNull(qb, str, deptType);
 		return orgService.findDept(qb);
 	}
+	
+	
+	@GetMapping(value = "findGroupMap")
+	public Object findGroupMap(UserInfo userInfo) {
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb, "t.name","name");
+		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+		
+		return orgService.findGroupMap(qb);
+	}
+
+	@GetMapping(value = "findDeptMap")
+	public Object findDeptMap(UserInfo userInfo) {
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb, "t.name","name");
+		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+		
+		return orgService.findDeptMap(qb);
+	}
+	
+	@GetMapping(value = "groupDataGrid")
+	public Object groupDataGrid(UserInfo userInfo,Integer start,Integer length) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.setStart(start);
+		qb.setLength(length);
+		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb, "t.name","name");
+		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+		
+		return orgService.groupDataGrid(qb);
+	}
+	
+	@GetMapping(value = "deptDataGrid")
+	public Object deptDataGrid(UserInfo userInfo,Integer start,Integer length) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.setStart(start);
+		qb.setLength(length);
+		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb, "t.name","name");
+		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+		
+		return orgService.deptDataGrid(qb);
+	}
 }
