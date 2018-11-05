@@ -36,13 +36,10 @@ public class RefreshInfoAction {
 	private String corpsecret = "P8mS9dDsgD3YNOH5EB3IC8cbpXaHLdQXHJebb81i_Fo";
 
 	// 更新人员
-	@GetMapping(value = "refreshUser")
-	public Object refreshUser(UserInfo userInfo) {
+	@GetMapping(value = "getUserInfo")
+	public Object refreshUser(String userid,UserInfo userInfo) {
 		// 获取 access_token
-		wxDataService.refreshUser(userInfo);
-
-
-		return null;
+		return wxDataService.getUserInfo(userid);
 	}
 	// 更新人员
 	@GetMapping(value = "refreshTag")

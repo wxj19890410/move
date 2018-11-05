@@ -35,7 +35,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class WxDataServiceImpl implements WxDataService {
@@ -72,7 +74,6 @@ public class WxDataServiceImpl implements WxDataService {
 				BufferedReader bufr = new BufferedReader(isr);
 				String str;
 				while ((str = bufr.readLine()) != null) {
-					System.out.println(str);
 					JsonObject jo = JsonUtils.fromJson(str).getAsJsonObject();
 					WxUtilModel wxUtilModel = JsonUtils.fromJson(jo, WxUtilModel.class);
 					access_token = wxUtilModel.getAccess_token();
@@ -81,7 +82,6 @@ public class WxDataServiceImpl implements WxDataService {
 				bufr.close();
 				Globals.ACCESS_TOKEN = access_token;
 				Globals.EXPIRES_DATE = new Date().getTime() + 7200 * 1000;
-				System.err.println(access_token);
 			} else {
 				System.err.println("失败");
 			}
@@ -137,11 +137,11 @@ public class WxDataServiceImpl implements WxDataService {
 			QueryUtils.addWhere(qb, " and 1=1");
 			orgDepartmentDao.delete(qb);
 			orgDepartmentDao.batchSave(OrgDepartments);
-			// 保存关系  更新人员
+			// 保存关系 更新人员
 			List<OrgRelation> orgRelations = Lists.newArrayList();
-			
+
 			List<UserData> userDatas = Lists.newArrayList();
-			
+
 			for (OrgDepartment orgDepartment : OrgDepartments) {
 				data = "https://qyapi.weixin.qq.com/cgi-bin/user/list?access_token=" + access_token + "&department_id="
 						+ orgDepartment.getId() + "&fetch_child=0";
@@ -307,10 +307,84 @@ public class WxDataServiceImpl implements WxDataService {
 	}
 
 	@Override
-	@Transactional(propagation = Propagation.REQUIRED)
-	public Integer refreshUser(UserInfo userInfo) {
-		// TODO Auto-generated method stub
-		return null;
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+	public Map<String, Object> getUserInfo(String userid) {
+		// 获取 access_token
+		String access_token = Globals.ACCESS_TOKEN;
+		Date now = new Date();
+		if (null == access_token || Globals.EXPIRES_DATE < now.getTime()) {
+			access_token = this.getAccessToken();
+		}
+		String data = "https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token=" + access_token + "&userid=" + userid;
+		UserData userData = new UserData();
+		try {
+			URL url = new URL(data);
+			URLConnection URLconnection = url.openConnection();
+			HttpURLConnection httpConnection = (HttpURLConnection) URLconnection;
+			httpConnection.setRequestProperty("Content-Type", "application/json");
+			httpConnection.setRequestProperty("contentType", "UTF-8");
+			httpConnection.setRequestProperty("Accept-Charset", "UTF-8");
+			int responseCode = httpConnection.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				InputStream in = httpConnection.getInputStream();
+				InputStreamReader isr = new InputStreamReader(in, "UTF-8");
+				BufferedReader bufr = new BufferedReader(isr);
+				String str;
+				while ((str = bufr.readLine()) != null) {
+					JsonObject jo = JsonUtils.fromJson(str).getAsJsonObject();
+					userData = JsonUtils.fromJson(jo, UserData.class);
+				}
+				bufr.close();
+			} else {
+				System.err.println("失败");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		Map<String, Object> result = new HashMap<>();
+		if (null != userData && StringUtils.isNotBlank(userData.getUserid())) {
+			result.put("position", userData.getPosition());
+			result.put("name", userData.getName());
+			result.put("mobile", userData.getMobile());
+			result.put("avatar1", userData.getAvatar());
+			if(StringUtils.isNotBlank(userData.getAvatar())){
+				result.put("avatar", userData.getAvatar().substring(0,userData.getAvatar().length()-2) + "/100");
+			}
+			
+		}
+		// 获取 部门
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addColumn(qb,
+				"(case when t.relationType = 'tag' then (select t1.tagname from  OrgGroup t1 where t1.tagid = t.relationId) else (select t1.name from  OrgDepartment t1 where t1.id = t.relationId) end)",
+				"name");
+		QueryUtils.addColumn(qb, "t.relationType", "relationType");
+		QueryUtils.addWhere(qb, " and userid={0}", userid);
+		List<Map<String, Object>> relations = orgRelationDao.datagrid(qb).getRows();
+		String dept = null;
+		String tag = null;
+		if (null != relations && relations.size() > 0) {
+			for (Map<String, Object> relation : relations) {
+				if (null != relation.get("relationType")) {
+					if (StringUtils.equals(relation.get("relationType").toString(), "tag")) {
+						if (StringUtils.isNotBlank(tag)) {
+							tag = tag + "," + relation.get("name").toString();
+						} else {
+							tag = relation.get("name").toString();
+						}
+
+					} else {
+						if (StringUtils.isNotBlank(dept)) {
+							dept = dept + "," + relation.get("name").toString();
+						} else {
+							dept = relation.get("name").toString();
+						}
+					}
+				}
+			}
+		}
+		result.put("tag", tag);
+		result.put("dept", dept);
+		return result;
 	}
 
 }

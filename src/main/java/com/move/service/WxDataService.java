@@ -12,13 +12,12 @@ import java.util.Map;
 
 public interface WxDataService {
 
-	public String  getAccessToken();
+	public String getAccessToken();
 
 	public Integer setDept(UserInfo userInfo);
 
 	public Integer refreshTag(UserInfo userInfo);
 
-	public Integer refreshUser(UserInfo userInfo);
-	
+	public Map<String, Object> getUserInfo(String userid);
 
 }

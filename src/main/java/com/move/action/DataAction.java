@@ -34,12 +34,12 @@ public class DataAction {
     }
 
 	@GetMapping(value = "dataDataGrid")
-	public Object dataDataGrid(UserInfo userInfo,Integer start,Integer length,String openId,String month,Integer fileId) {
+	public Object dataDataGrid(UserInfo userInfo,Integer start,Integer length,String userid,String month,Integer fileId) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.setStart(start);
 		qb.setLength(length);
 		QueryUtils.addColumn(qb, "t.id");
-		QueryUtils.addColumn(qb, "u.phone","phone");
+		QueryUtils.addColumn(qb, "u.mobile","mobile");
 		QueryUtils.addColumn(qb, "u.name","userName");
 		QueryUtils.addColumn(qb, "t.month","month");
 		QueryUtils.addColumn(qb, "t.value1","study");
@@ -50,11 +50,10 @@ public class DataAction {
 		QueryUtils.addColumn(qb, "t.value6","improve");
 		QueryUtils.addColumn(qb, "t.total","total");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		QueryUtils.addWhereIfNotNull(qb, "and t.openId = {0}", openId);
+		QueryUtils.addWhereIfNotNull(qb, "and t.userid = {0}", userid);
 		QueryUtils.addWhereIfNotNull(qb, "and t.fileId = {0}", fileId);
 		QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
-		QueryUtils.addJoin(qb, "left join UserData u on u.openId = t.openId and u.delFlag = '0'");
-		
+		QueryUtils.addJoin(qb, "left join UserData u on u.userid = t.openId and u.delFlag = '0'");
 		return dataService.DataGrid(qb);
 	}
 	

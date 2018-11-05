@@ -85,8 +85,9 @@ public class OrgAction {
 		qb.setStart(start);
 		qb.setLength(length);
 		QueryUtils.addColumn(qb, "t.id");
-		QueryUtils.addColumn(qb, "t.name","name");
-		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+		QueryUtils.addColumn(qb, "t.tagid");
+		QueryUtils.addColumn(qb, "t.tagname","name");
+		QueryUtils.addColumn(qb, "(select count(t1.id) from OrgRelation t1 where t1.relationType ='tag' and t1.relationId = t.tagid)","personNub");
 		
 		return orgService.groupDataGrid(qb);
 	}
@@ -97,10 +98,9 @@ public class OrgAction {
 		qb.setStart(start);
 		qb.setLength(length);
 		QueryUtils.addColumn(qb, "t.id");
-		QueryUtils.addColumn(qb, "t.name","name");
-		QueryUtils.addColumn(qb, "t.deptType");
-		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		
+		QueryUtils.addColumn(qb, "t.name");
+		QueryUtils.addColumn(qb, "t.parentid","parentid");
+		QueryUtils.addColumn(qb, "(select count(t1.id) from OrgRelation t1 where t1.relationType ='dept' and t1.relationId = t.id)","personNub");
 		return orgService.deptDataGrid(qb);
 	}
 }

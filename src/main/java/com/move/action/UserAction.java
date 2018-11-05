@@ -58,16 +58,12 @@ public class UserAction {
 		qb.setStart(start);
 		qb.setLength(length);
 		QueryUtils.addColumn(qb, "t.id");
-		QueryUtils.addColumn(qb, "t.openId","openId");
+		QueryUtils.addColumn(qb, "t.userid","userid");
 		QueryUtils.addColumn(qb, "t.name","name");
-		QueryUtils.addColumn(qb, "(select t1.name from OrgGroup t1 where t1.id = u.groupId)","groupName");
-		QueryUtils.addColumn(qb, "(select t1.name from OrgDepartment t1 where t1.id = u.deptId)","deptName");
-		QueryUtils.addColumn(qb, "(select t1.deptType from OrgDepartment t1 where t1.id = u.deptId)","deptType");
-		QueryUtils.addColumn(qb, "u.groupId","groupId");
-		QueryUtils.addColumn(qb, "u.deptId","deptId");
-		QueryUtils.addColumn(qb, "t.name","name");
-		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		QueryUtils.addJoin(qb, "left Join OrgRelation u on u.delFlag = '0' and u.openId = t.openId");
+		QueryUtils.addColumn(qb, "t.position","position");
+		QueryUtils.addColumn(qb, "t.mobile","mobile");
+		QueryUtils.addColumn(qb, "t.email","email");
+		QueryUtils.addColumn(qb, "t.avatar","avatar");
 		return userService.userDataGrid(qb);
 	}
 
