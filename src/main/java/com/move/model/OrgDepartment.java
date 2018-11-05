@@ -5,35 +5,38 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
 @Table(name="org_department")
 @JsonIgnoreProperties(value={"hibernateLazyInitializer","handler"})
-public class OrgDepartment extends BaseModel implements Serializable {
+public class OrgDepartment implements Serializable {
     private static final long serialVersionUID = 1L;
+    
+    @Id
+    private  Integer id;
 
     private  String name;
 
-    @Column(name = "parent_id")
-    private  Integer parentId;
+    private  Integer parentid;
 
-    @Column(name = "d_level")
-    private  Integer dLevel;
-
-
-    @Column(name = "dept_type")
-    private  String deptType;
+    
+    @Column(name = "order_nub")
+    private  Long order;
     
     
-    public String getDeptType() {
-		return deptType;
+    public Integer getId() {
+		return id;
 	}
 
-	public void setDeptType(String deptType) {
-		this.deptType = deptType;
+	public void setId(Integer id) {
+		this.id = id;
 	}
+
 
 	public String getName() {
         return name;
@@ -43,19 +46,23 @@ public class OrgDepartment extends BaseModel implements Serializable {
         this.name = name;
     }
 
-    public Integer getParentId() {
-        return parentId;
-    }
+	public Integer getParentid() {
+		return parentid;
+	}
 
-    public void setParentId(Integer parentId) {
-        this.parentId = parentId;
-    }
+	public void setParentid(Integer parentid) {
+		this.parentid = parentid;
+	}
 
-    public Integer getdLevel() {
-        return dLevel;
-    }
+	public Long getOrder() {
+		return order;
+	}
 
-    public void setdLevel(Integer dLevel) {
-        this.dLevel = dLevel;
-    }
+	public void setOrder(Long order) {
+		this.order = order;
+	}
+
+    
+    
+
 }

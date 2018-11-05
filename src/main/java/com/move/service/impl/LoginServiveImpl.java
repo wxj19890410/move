@@ -32,35 +32,17 @@ public class LoginServiveImpl implements LoginService {
 	@Transactional(propagation = Propagation.REQUIRED)
 	public UserInfo load(String account, String password, String openId) {
 		QueryBuilder qb = new QueryBuilder();
-		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		if (StringUtils.isNotBlank(openId)) {
-			QueryUtils.addWhere(qb, "and t.openId = {0}", openId);
-		} else if (StringUtils.isNotBlank(account) && StringUtils.isNotBlank(password)) {
-			QueryUtils.addWhere(qb, "and t.account = {0}", account);
-			QueryUtils.addWhere(qb, "and t.passWord = {0}", password);
+		QueryUtils.addWhere(qb, "and t.account = {0}", account);
+		QueryUtils.addWhere(qb, "and t.passWord = {0}", password);
 
-		}
 		UserData userData = useDataDao.get(qb);
 		OrgRelation relation = new OrgRelation();
 		UserInfo userInfo = new UserInfo();
 		if (null != userData) {
-			if (StringUtils.isNotBlank(userData.getOpenId())) {
-				qb = new QueryBuilder();
-				QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-				QueryUtils.addWhere(qb, "and t.openId = {0}", userData.getOpenId());
-				relation = orgRelationDao.get(qb);
-			} else {
-				relation = null;
-			}
+
 		} else {
 			// 账号不存在
 		}
-		if (null != relation) {
-			userInfo.setGroupId(relation.getGroupId());
-			userInfo.setDeptId(relation.getDeptId());
-			userInfo.setGroupName("第一组");
-		}
-		userInfo.setOpenID(userData.getOpenId());
 		userInfo.setName(userData.getName());
 		userInfo.setUserId(userData.getId());
 		userInfo.setLoginUuid(UUID.randomUUID().toString());

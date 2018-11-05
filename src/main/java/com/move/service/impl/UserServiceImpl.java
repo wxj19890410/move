@@ -43,18 +43,8 @@ public class UserServiceImpl implements UserService {
 		OrgRelation orgRelation = orgRelationDao.get(qb);
 
 		if (null != orgRelation) {
-			orgRelation.setDeptId(deptId);
-			orgRelation.setGroupId(groupId);
-			Utilities.setUserInfo(orgRelation, userInfo);
-			orgRelationDao.update(orgRelation);
 
 		} else {
-			orgRelation = new OrgRelation();
-			orgRelation.setDeptId(deptId);
-			orgRelation.setGroupId(groupId);
-			orgRelation.setOpenId(openId);
-			Utilities.setUserInfo(orgRelation, userInfo);
-			orgRelationDao.save(orgRelation);
 		}
 		return orgRelation;
 	}

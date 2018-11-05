@@ -15,6 +15,8 @@ public interface BaseDao<T> {
 	public T get(QueryBuilder qb);
 
 	public T save(T obj);
+	
+	public void batchSave(List<T> objs) ;
 
 	public T update(T obj);
 

@@ -6,41 +6,55 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name="org_relation")
-@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler"})
-public class OrgRelation  extends BaseModel implements Serializable {
-    private static final long serialVersionUID = 1L;
+@Table(name = "org_relation")
+@JsonIgnoreProperties(value = { "hibernateLazyInitializer", "handler" })
+public class OrgRelation implements Serializable {
+	private static final long serialVersionUID = 1L;
 
-    @Column(name = "open_id")
-    private  String openId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
 
-    @Column(name = "group_id")
-    private  Integer groupId;
+	private String userid;
 
-    @Column(name = "dept_id")
-    private  Integer deptId;
+	@Column(name = "relation_id")
+	private Integer relationId;
 
-    public String getOpenId() {
-        return openId;
-    }
+	@Column(name = "relation_type")
+	private String relationType;
 
-    public void setOpenId(String openId) {
-        this.openId = openId;
-    }
+	public Integer getId() {
+		return id;
+	}
 
-    public Integer getGroupId() {
-        return groupId;
-    }
+	public void setId(Integer id) {
+		this.id = id;
+	}
 
-    public void setGroupId(Integer groupId) {
-        this.groupId = groupId;
-    }
+	public String getUserid() {
+		return userid;
+	}
 
-    public Integer getDeptId() {
-        return deptId;
-    }
+	public void setUserid(String userid) {
+		this.userid = userid;
+	}
 
-    public void setDeptId(Integer deptId) {
-        this.deptId = deptId;
-    }
+	public Integer getRelationId() {
+		return relationId;
+	}
+
+	public void setRelationId(Integer relationId) {
+		this.relationId = relationId;
+	}
+
+	public String getRelationType() {
+		return relationType;
+	}
+
+	public void setRelationType(String relationType) {
+		this.relationType = relationType;
+	}
+	
+	
+
 }

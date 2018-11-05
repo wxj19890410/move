@@ -1,8 +1,13 @@
 package com.move.service.impl;
 
+import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
+import com.move.dao.OrgDepartmentDao;
+import com.move.dao.OrgGroupDao;
 import com.move.dao.OrgRelationDao;
 import com.move.dao.UseDataDao;
+import com.move.model.OrgDepartment;
+import com.move.model.OrgGroup;
 import com.move.model.OrgRelation;
 import com.move.model.UserData;
 import com.move.service.UserService;
@@ -15,7 +20,9 @@ import com.move.utils.QueryBuilder;
 import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
 import com.move.utils.Utilities;
+import com.move.utils.WxUtilModel;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -37,6 +44,12 @@ public class WxDataServiceImpl implements WxDataService {
 	private UseDataDao useDataDao;
 
 	@Autowired
+	private OrgDepartmentDao orgDepartmentDao;
+
+	@Autowired
+	private OrgGroupDao orgGroupDao;
+
+	@Autowired
 	private OrgRelationDao orgRelationDao;
 
 	@Override
@@ -49,24 +62,24 @@ public class WxDataServiceImpl implements WxDataService {
 			URL url = new URL(data);
 			URLConnection URLconnection = url.openConnection();
 			HttpURLConnection httpConnection = (HttpURLConnection) URLconnection;
+			httpConnection.setRequestProperty("Content-Type", "application/json");
+			httpConnection.setRequestProperty("contentType", "UTF-8");
+			httpConnection.setRequestProperty("Accept-Charset", "UTF-8");
 			int responseCode = httpConnection.getResponseCode();
 			if (responseCode == HttpURLConnection.HTTP_OK) {
-				System.err.println("成功");
 				InputStream in = httpConnection.getInputStream();
 				InputStreamReader isr = new InputStreamReader(in);
 				BufferedReader bufr = new BufferedReader(isr);
 				String str;
-				System.out.println(httpConnection.getInputStream());
-
 				while ((str = bufr.readLine()) != null) {
 					System.out.println(str);
 					JsonObject jo = JsonUtils.fromJson(str).getAsJsonObject();
-					access_token = jo.get("access_token").toString();
+					WxUtilModel wxUtilModel = JsonUtils.fromJson(jo, WxUtilModel.class);
+					access_token = wxUtilModel.getAccess_token();
 
 				}
 				bufr.close();
 				Globals.ACCESS_TOKEN = access_token;
-
 				Globals.EXPIRES_DATE = new Date().getTime() + 7200 * 1000;
 				System.err.println(access_token);
 			} else {
@@ -79,6 +92,7 @@ public class WxDataServiceImpl implements WxDataService {
 	}
 
 	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
 	public Integer setDept(UserInfo userInfo) {
 		// 获取 access_token
 		String access_token = Globals.ACCESS_TOKEN;
@@ -87,27 +101,26 @@ public class WxDataServiceImpl implements WxDataService {
 			access_token = this.getAccessToken();
 		}
 		String data = "https://qyapi.weixin.qq.com/cgi-bin/department/list?access_token=" + access_token;
-		System.out.println("access_token:"+access_token);
+		WxUtilModel wxUtilModel = new WxUtilModel();
 		try {
 			URL url = new URL(data);
-			System.err.println("data:"+data);
 			URLConnection URLconnection = url.openConnection();
 			HttpURLConnection httpConnection = (HttpURLConnection) URLconnection;
+			httpConnection.setRequestProperty("Content-Type", "application/json");
+			httpConnection.setRequestProperty("contentType", "UTF-8");
+			httpConnection.setRequestProperty("Accept-Charset", "UTF-8");
 			int responseCode = httpConnection.getResponseCode();
 			if (responseCode == HttpURLConnection.HTTP_OK) {
-				System.err.println("成功222");
 				InputStream in = httpConnection.getInputStream();
-				InputStreamReader isr = new InputStreamReader(in);
+				InputStreamReader isr = new InputStreamReader(in, "UTF-8");
 				BufferedReader bufr = new BufferedReader(isr);
 				String str;
-				System.err.println("bufr:"+bufr);
 				while ((str = bufr.readLine()) != null) {
-					System.out.println(str);
 					JsonObject jo = JsonUtils.fromJson(str).getAsJsonObject();
-					System.out.println(jo);
+					wxUtilModel = JsonUtils.fromJson(jo, WxUtilModel.class);
+					System.out.println(str);
 				}
 				bufr.close();
-				System.err.println(str);
 			} else {
 				System.err.println("失败");
 			}
@@ -115,6 +128,188 @@ public class WxDataServiceImpl implements WxDataService {
 			e.printStackTrace();
 		}
 
+		List<OrgDepartment> OrgDepartments = wxUtilModel.getDepartment();
+
+		if (null != OrgDepartments && OrgDepartments.size() > 0) {
+			// 保存数据
+			// 删除之前数据
+			QueryBuilder qb = new QueryBuilder();
+			QueryUtils.addWhere(qb, " and 1=1");
+			orgDepartmentDao.delete(qb);
+			orgDepartmentDao.batchSave(OrgDepartments);
+			// 保存关系  更新人员
+			List<OrgRelation> orgRelations = Lists.newArrayList();
+			
+			List<UserData> userDatas = Lists.newArrayList();
+			
+			for (OrgDepartment orgDepartment : OrgDepartments) {
+				data = "https://qyapi.weixin.qq.com/cgi-bin/user/list?access_token=" + access_token + "&department_id="
+						+ orgDepartment.getId() + "&fetch_child=0";
+				wxUtilModel = new WxUtilModel();
+				try {
+					URL url = new URL(data);
+					URLConnection URLconnection = url.openConnection();
+					HttpURLConnection httpConnection = (HttpURLConnection) URLconnection;
+					httpConnection.setRequestProperty("Content-Type", "application/json");
+					httpConnection.setRequestProperty("contentType", "UTF-8");
+					httpConnection.setRequestProperty("Accept-Charset", "UTF-8");
+					int responseCode = httpConnection.getResponseCode();
+					if (responseCode == HttpURLConnection.HTTP_OK) {
+						InputStream in = httpConnection.getInputStream();
+						InputStreamReader isr = new InputStreamReader(in, "UTF-8");
+						BufferedReader bufr = new BufferedReader(isr);
+						String str;
+						while ((str = bufr.readLine()) != null) {
+							JsonObject jo = JsonUtils.fromJson(str).getAsJsonObject();
+							wxUtilModel = JsonUtils.fromJson(jo, WxUtilModel.class);
+							System.out.println(str);
+						}
+						bufr.close();
+					} else {
+						System.err.println("失败");
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				List<UserData> lists = Lists.newArrayList();
+				lists = wxUtilModel.getUserlist();
+				userDatas.addAll(lists);
+				if (null != lists && lists.size() > 0) {
+					OrgRelation orgRelation = new OrgRelation();
+					for (UserData userData : lists) {
+						orgRelation = new OrgRelation();
+						orgRelation.setRelationId(orgDepartment.getId());
+						orgRelation.setRelationType("dept");
+						orgRelation.setUserid(userData.getUserid());
+						orgRelations.add(orgRelation);
+					}
+				}
+			}
+
+			if (null != orgRelations && orgRelations.size() > 0) {
+				// 删除之前关系
+				qb = new QueryBuilder();
+				QueryUtils.addWhere(qb, " and relationType='dept'");
+				orgRelationDao.delete(qb);
+				// 创建关系
+				orgRelationDao.batchSave(orgRelations);
+			}
+			if (null != userDatas && userDatas.size() > 0) {
+				// 删除人员
+				qb = new QueryBuilder();
+				QueryUtils.addWhere(qb, " and account is null");
+				useDataDao.delete(qb);
+				// 创建关系
+				useDataDao.batchSave(userDatas);
+			}
+		}
+		return OrgDepartments.size();
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Integer refreshTag(UserInfo userInfo) {
+		// 获取 access_token
+		String access_token = Globals.ACCESS_TOKEN;
+		Date now = new Date();
+		if (null == access_token || Globals.EXPIRES_DATE < now.getTime()) {
+			access_token = this.getAccessToken();
+		}
+		String data = "https://qyapi.weixin.qq.com/cgi-bin/tag/list?access_token=" + access_token;
+		WxUtilModel wxUtilModel = new WxUtilModel();
+		try {
+			URL url = new URL(data);
+			URLConnection URLconnection = url.openConnection();
+			HttpURLConnection httpConnection = (HttpURLConnection) URLconnection;
+			httpConnection.setRequestProperty("Content-Type", "application/json");
+			httpConnection.setRequestProperty("contentType", "UTF-8");
+			httpConnection.setRequestProperty("Accept-Charset", "UTF-8");
+			int responseCode = httpConnection.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				InputStream in = httpConnection.getInputStream();
+				InputStreamReader isr = new InputStreamReader(in, "UTF-8");
+				BufferedReader bufr = new BufferedReader(isr);
+				String str;
+				while ((str = bufr.readLine()) != null) {
+					JsonObject jo = JsonUtils.fromJson(str).getAsJsonObject();
+					wxUtilModel = JsonUtils.fromJson(jo, WxUtilModel.class);
+				}
+				bufr.close();
+			} else {
+				System.err.println("失败");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		List<OrgGroup> orgGroups = wxUtilModel.getTaglist();
+		if (null != orgGroups && orgGroups.size() > 0) {
+			// 保存数据
+			QueryBuilder qb = new QueryBuilder();
+			QueryUtils.addWhere(qb, " and 1=1");
+			orgGroupDao.delete(qb);
+			orgGroupDao.batchSave(orgGroups);
+			// 保存关系
+			List<OrgRelation> orgRelations = Lists.newArrayList();
+			for (OrgGroup orgGroup : orgGroups) {
+				data = "https://qyapi.weixin.qq.com/cgi-bin/tag/get?access_token=" + access_token + "&tagid="
+						+ orgGroup.getTagid();
+				wxUtilModel = new WxUtilModel();
+				try {
+					URL url = new URL(data);
+					URLConnection URLconnection = url.openConnection();
+					HttpURLConnection httpConnection = (HttpURLConnection) URLconnection;
+					httpConnection.setRequestProperty("Content-Type", "application/json");
+					httpConnection.setRequestProperty("contentType", "UTF-8");
+					httpConnection.setRequestProperty("Accept-Charset", "UTF-8");
+					int responseCode = httpConnection.getResponseCode();
+					if (responseCode == HttpURLConnection.HTTP_OK) {
+						InputStream in = httpConnection.getInputStream();
+						InputStreamReader isr = new InputStreamReader(in, "UTF-8");
+						BufferedReader bufr = new BufferedReader(isr);
+						String str;
+						while ((str = bufr.readLine()) != null) {
+							JsonObject jo = JsonUtils.fromJson(str).getAsJsonObject();
+							wxUtilModel = JsonUtils.fromJson(jo, WxUtilModel.class);
+							System.out.println(str);
+						}
+						bufr.close();
+					} else {
+						System.err.println("失败");
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				List<UserData> lists = Lists.newArrayList();
+				lists = wxUtilModel.getUserlist();
+				if (null != lists && lists.size() > 0) {
+					OrgRelation orgRelation = new OrgRelation();
+					for (UserData userData : lists) {
+						orgRelation = new OrgRelation();
+						orgRelation.setRelationId(orgGroup.getTagid());
+						orgRelation.setRelationType("tag");
+						orgRelation.setUserid(userData.getUserid());
+						orgRelations.add(orgRelation);
+					}
+				}
+			}
+
+			if (null != orgRelations && orgRelations.size() > 0) {
+				// 删除之前关系
+				qb = new QueryBuilder();
+				QueryUtils.addWhere(qb, " and relationType='tag'");
+				orgRelationDao.delete(qb);
+				// 创建关系
+				orgRelationDao.batchSave(orgRelations);
+			}
+		}
+
+		return orgGroups.size();
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Integer refreshUser(UserInfo userInfo) {
+		// TODO Auto-generated method stub
 		return null;
 	}
 

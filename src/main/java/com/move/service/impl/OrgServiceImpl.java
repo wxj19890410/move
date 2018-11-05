@@ -34,8 +34,7 @@ public class OrgServiceImpl implements OrgService {
 			department = orgDepartmentDao.get(id);
 		}
 		department.setName(name);
-		department.setDeptType(deptType);
-		Utilities.setUserInfo(department, userInfo);
+		// Utilities.setUserInfo(department, userInfo);
 		if (Utilities.isValidId(id)) {
 			orgDepartmentDao.update(department);
 		} else {
@@ -51,8 +50,7 @@ public class OrgServiceImpl implements OrgService {
 		if (Utilities.isValidId(id)) {
 			group = orgGroupDao.get(id);
 		}
-		group.setName(name);
-		Utilities.setUserInfo(group, userInfo);
+		//group.setName(name);
 		if (Utilities.isValidId(id)) {
 			orgGroupDao.update(group);
 		} else {

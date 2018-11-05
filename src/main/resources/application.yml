@@ -7,9 +7,9 @@ application:
 spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://127.0.0.1:3305/wxj_test?characterEncoding=utf-8
-    username: root
-    password: 123456
+    url: jdbc:mariadb://192.168.10.125:3306/wxj_test2?characterEncoding=utf-8
+    username: jq
+    password: jq
   jpa:
     hibernate:
       ddl-auto: none

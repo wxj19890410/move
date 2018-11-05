@@ -38,25 +38,24 @@ public class RefreshInfoAction {
 	// 更新人员
 	@GetMapping(value = "refreshUser")
 	public Object refreshUser(UserInfo userInfo) {
-		
-		
+		// 获取 access_token
+		wxDataService.refreshUser(userInfo);
+
+
+		return null;
+	}
+	// 更新人员
+	@GetMapping(value = "refreshTag")
+	public Object refreshTag(UserInfo userInfo) {
+		wxDataService.refreshTag(userInfo);
 		// 获取 access_token
 		String access_token = Globals.ACCESS_TOKEN;
 		if (null == access_token) {
 			access_token = wxDataService.getAccessToken();
 		} else {
-			
-			
 
 		}
 
-		// 获取部门
-
-		// 获取人员
-
-		// 获取标签 (组)
-
-		// 获取标签 人员关系
 
 		return null;
 	}
@@ -64,15 +63,7 @@ public class RefreshInfoAction {
 	@GetMapping(value = "refreshDept")
 	public Object refreshDept(UserInfo userInfo) {
 		wxDataService.setDept(userInfo);
-		// 获取部门
-
-		// 获取人员
-
-		// 获取标签 (组)
-
-		// 获取标签 人员关系
 
 		return null;
 	}
-
 }
