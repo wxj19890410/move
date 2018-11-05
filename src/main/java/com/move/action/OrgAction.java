@@ -55,7 +55,6 @@ public class OrgAction {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addColumn(qb, "t.id", "id");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		//QueryUtils.addWhereIfNotNull(qb, str, deptType);
 		return orgService.findDept(qb);
 	}
 	
@@ -66,17 +65,17 @@ public class OrgAction {
 		QueryUtils.addColumn(qb, "t.id");
 		QueryUtils.addColumn(qb, "t.name","name");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		
 		return orgService.findGroupMap(qb);
 	}
 
 	@GetMapping(value = "findDeptMap")
-	public Object findDeptMap(UserInfo userInfo) {
+	public Object findDeptMap(UserInfo userInfo,String deptType) {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb, "t.deptType");
 		QueryUtils.addColumn(qb, "t.name","name");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		
+		QueryUtils.addWhereIfNotNull(qb, "and t.deptType = {0}", deptType);
 		return orgService.findDeptMap(qb);
 	}
 	
@@ -99,6 +98,7 @@ public class OrgAction {
 		qb.setLength(length);
 		QueryUtils.addColumn(qb, "t.id");
 		QueryUtils.addColumn(qb, "t.name","name");
+		QueryUtils.addColumn(qb, "t.deptType");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
 		
 		return orgService.deptDataGrid(qb);

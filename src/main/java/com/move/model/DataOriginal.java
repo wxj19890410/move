@@ -31,6 +31,8 @@ public class DataOriginal extends BaseModel implements Serializable {
     private  Integer value5;
 
     private  Integer value6;
+    
+    private  Integer total;
 
     private  String month;
 
@@ -106,4 +108,14 @@ public class DataOriginal extends BaseModel implements Serializable {
     public void setMonth(String month) {
         this.month = month;
     }
+
+	public Integer getTotal() {
+		return total;
+	}
+
+	public void setTotal(Integer total) {
+		this.total = total;
+	}
+
+
 }

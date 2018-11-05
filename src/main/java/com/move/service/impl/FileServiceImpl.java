@@ -1,8 +1,9 @@
 package com.move.service.impl;
 
 import ch.qos.logback.core.net.SyslogOutputStream;
-import com.move.dao.impl.DataOriginalDao;
-import com.move.dao.impl.SysFileDao;
+
+import com.move.dao.DataOriginalDao;
+import com.move.dao.SysFileDao;
 import com.move.model.DataOriginal;
 import com.move.model.SysFile;
 import com.move.service.FileService;
@@ -28,97 +29,99 @@ import java.util.List;
 
 @Service
 public class FileServiceImpl implements FileService {
-    @Autowired
-    private SysFileDao sysFileDao;
+	@Autowired
+	private SysFileDao sysFileDao;
 
-    @Autowired
-    private DataOriginalDao dataOriginalDao;
+	@Autowired
+	private DataOriginalDao dataOriginalDao;
 
-    @Override
-    @Transactional(propagation = Propagation.REQUIRED)
-    public SysFile setFileData(String name,String ext,String path, UserInfo userInfo) {
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public SysFile setFileData(String name, String ext, String path, UserInfo userInfo) {
 
-        SysFile sysFile = new SysFile();
-        sysFile.setName(name);
-        sysFile.setExt(ext);
-        sysFile.setOpenId(userInfo.getOpenID());
-        sysFile.setPath(path);
-        sysFile.setMonth(Utilities.formatDate(new Date(), "yyyy-MM"));
-        Utilities.setUserInfo(sysFile,userInfo);
-        sysFileDao.save(sysFile);
-        try {
-            readExcel(path,name,sysFile.getId(),sysFile.getMonth(),userInfo);
-        }catch (Exception e) {
-        }
-        return sysFile;
-    }
+		SysFile sysFile = new SysFile();
+		sysFile.setName(name);
+		sysFile.setExt(ext);
+		sysFile.setOpenId(userInfo.getOpenID());
+		sysFile.setPath(path);
+		sysFile.setMonth(Utilities.formatDate(new Date(), "yyyy-MM"));
+		Utilities.setUserInfo(sysFile, userInfo);
+		sysFileDao.save(sysFile);
+		try {
+			readExcel(path, name, sysFile.getId(), sysFile.getMonth(), userInfo);
+		} catch (Exception e) {
+		}
+		return sysFile;
+	}
 
-    @Transactional(propagation = Propagation.REQUIRED)
-    public void readExcel(String path,String name,Integer fileId ,String month,UserInfo userInfo) throws Exception  {
-        InputStream is = new FileInputStream(new File(ResourceUtils.getURL("classpath:").getPath()+path));
-        Workbook hssfWorkbook = null;
-        if (name.endsWith("xlsx")) {
-            hssfWorkbook = new XSSFWorkbook(is);//Excel 2007
-        } else if (name.endsWith("xls")) {
-            hssfWorkbook = new HSSFWorkbook(is);//Excel 2003
-        }
-        DataOriginal dataOriginal = null;
-        List<DataOriginal> list = new ArrayList<DataOriginal>();
-        // 循环工作表Sheet
-        for (int numSheet = 0; numSheet < hssfWorkbook.getNumberOfSheets(); numSheet++) {
-            Sheet hssfSheet = hssfWorkbook.getSheetAt(numSheet);
-            if (hssfSheet == null) {
-                continue;
-            }
-            // 循环行Row
-            for (int rowNum = 1; rowNum <= hssfSheet.getLastRowNum(); rowNum++) {
-                Row hssfRow = hssfSheet.getRow(rowNum);
-                if (hssfRow != null) {
-                    if(hssfRow.getRowNum()>0){
-                        dataOriginal = new DataOriginal();
-                        if (matchesString(hssfRow.getCell(1)))
-                            dataOriginal.setValue1((new Double(hssfRow.getCell(1).toString())).intValue());
-                        else{
-                            dataOriginal.setValue1(0);
-                        }
-                        if (matchesString(hssfRow.getCell(2)))
-                            dataOriginal.setValue2((new Double(hssfRow.getCell(2).toString())).intValue());
-                        else{
-                            dataOriginal.setValue2(0);
-                        }
-                        if (matchesString(hssfRow.getCell(3)))
-                            dataOriginal.setValue3((new Double(hssfRow.getCell(3).toString())).intValue());
-                        else{
-                            dataOriginal.setValue3(0);
-                        }
-                        if (matchesString(hssfRow.getCell(4)))
-                            dataOriginal.setValue4((new Double(hssfRow.getCell(4).toString())).intValue());
-                        else{
-                            dataOriginal.setValue4(0);
-                        }
-                        if (matchesString(hssfRow.getCell(5)))
-                            dataOriginal.setValue5((new Double(hssfRow.getCell(5).toString())).intValue());
-                        else{
-                            dataOriginal.setValue5(0);
-                        }
-                        if (matchesString(hssfRow.getCell(6)))
-                            dataOriginal.setValue6((new Double(hssfRow.getCell(6).toString())).intValue());
-                        else{
-                            dataOriginal.setValue6(0);
-                        }
-                        dataOriginal.setFileId(fileId);
-                        dataOriginal.setMonth(month);
-                        Utilities.setUserInfo(dataOriginal,userInfo);
-                        list.add(dataOriginal);
-                    }
-                }
-            }
-            //System.out.print("行数:"+list.size());
-            dataOriginalDao.saveAll(list);
-        }
-    }
-    private Boolean matchesString (Object data){
-        String reg = "^[0-9]+(.[0-9]+)?$";
-        return data!= null && !"".equals(data.toString().trim())&&data.toString().matches(reg);
-    }
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void readExcel(String path, String name, Integer fileId, String month, UserInfo userInfo) throws Exception {
+		InputStream is = new FileInputStream(new File(ResourceUtils.getURL("classpath:").getPath() + path));
+		Workbook hssfWorkbook = null;
+		if (name.endsWith("xlsx")) {
+			hssfWorkbook = new XSSFWorkbook(is);// Excel 2007
+		} else if (name.endsWith("xls")) {
+			hssfWorkbook = new HSSFWorkbook(is);// Excel 2003
+		}
+		DataOriginal dataOriginal = null;
+		List<DataOriginal> list = new ArrayList<DataOriginal>();
+		// 循环工作表Sheet
+		for (int numSheet = 0; numSheet < hssfWorkbook.getNumberOfSheets(); numSheet++) {
+			Sheet hssfSheet = hssfWorkbook.getSheetAt(numSheet);
+			if (hssfSheet == null) {
+				continue;
+			}
+			// 循环行Row
+			for (int rowNum = 1; rowNum <= hssfSheet.getLastRowNum(); rowNum++) {
+				Row hssfRow = hssfSheet.getRow(rowNum);
+				if (hssfRow != null) {
+					if (hssfRow.getRowNum() > 0) {
+						dataOriginal = new DataOriginal();
+						if (matchesString(hssfRow.getCell(1)))
+							dataOriginal.setValue1((new Double(hssfRow.getCell(1).toString())).intValue());
+						else {
+							dataOriginal.setValue1(0);
+						}
+						if (matchesString(hssfRow.getCell(2)))
+							dataOriginal.setValue2((new Double(hssfRow.getCell(2).toString())).intValue());
+						else {
+							dataOriginal.setValue2(0);
+						}
+						if (matchesString(hssfRow.getCell(3)))
+							dataOriginal.setValue3((new Double(hssfRow.getCell(3).toString())).intValue());
+						else {
+							dataOriginal.setValue3(0);
+						}
+						if (matchesString(hssfRow.getCell(4)))
+							dataOriginal.setValue4((new Double(hssfRow.getCell(4).toString())).intValue());
+						else {
+							dataOriginal.setValue4(0);
+						}
+						if (matchesString(hssfRow.getCell(5)))
+							dataOriginal.setValue5((new Double(hssfRow.getCell(5).toString())).intValue());
+						else {
+							dataOriginal.setValue5(0);
+						}
+						if (matchesString(hssfRow.getCell(6)))
+							dataOriginal.setValue6((new Double(hssfRow.getCell(6).toString())).intValue());
+						else {
+							dataOriginal.setValue6(0);
+						}
+						dataOriginal.setFileId(fileId);
+						dataOriginal.setMonth(month);
+						Utilities.setUserInfo(dataOriginal, userInfo);
+						list.add(dataOriginal);
+						dataOriginalDao.save(dataOriginal);
+					}
+				}
+			}
+			// System.out.print("行数:"+list.size());
+
+		}
+	}
+
+	private Boolean matchesString(Object data) {
+		String reg = "^[0-9]+(.[0-9]+)?$";
+		return data != null && !"".equals(data.toString().trim()) && data.toString().matches(reg);
+	}
 }

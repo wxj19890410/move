@@ -51,4 +51,12 @@ public interface BaseDao<T> {
 	public <U> U sqlUnique(String sql, Object... params);
 
 	public Integer sqlUpdate(String sql, Object... params);
+	/**
+	 * 加载Map对象
+	 * 
+	 * @param qb
+	 *            查询构建类
+	 * @return
+	 */
+	public Map<String, Object> getMap(QueryBuilder qb);
 }

@@ -22,7 +22,20 @@ public class OrgDepartment extends BaseModel implements Serializable {
     @Column(name = "d_level")
     private  Integer dLevel;
 
-    public String getName() {
+
+    @Column(name = "dept_type")
+    private  String deptType;
+    
+    
+    public String getDeptType() {
+		return deptType;
+	}
+
+	public void setDeptType(String deptType) {
+		this.deptType = deptType;
+	}
+
+	public String getName() {
         return name;
     }
 

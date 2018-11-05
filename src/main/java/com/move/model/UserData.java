@@ -19,7 +19,7 @@ public class UserData extends BaseModel implements Serializable {
     private  String phone;
 
     @Column(name = "open_id")
-    private  String OpenID;
+    private  String openId;
 
     @Column(name = "pass_word")
     private  String passWord;
@@ -52,15 +52,16 @@ public class UserData extends BaseModel implements Serializable {
         this.phone = phone;
     }
 
-    public String getOpenID() {
-        return OpenID;
-    }
 
-    public void setOpenID(String openID) {
-        OpenID = openID;
-    }
+	public String getOpenId() {
+		return openId;
+	}
 
-    public String getAccount() {
+	public void setOpenId(String openId) {
+		this.openId = openId;
+	}
+
+	public String getAccount() {
         return account;
     }
 

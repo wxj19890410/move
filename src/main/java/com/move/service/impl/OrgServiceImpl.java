@@ -27,13 +27,14 @@ public class OrgServiceImpl implements OrgService {
 	private OrgGroupDao orgGroupDao;
 
 	@Override
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRED)
 	public OrgDepartment saveDept(Integer id, String name, String deptType, UserInfo userInfo) {
 		OrgDepartment department = new OrgDepartment();
 		if (Utilities.isValidId(id)) {
 			department = orgDepartmentDao.get(id);
 		}
 		department.setName(name);
+		department.setDeptType(deptType);
 		Utilities.setUserInfo(department, userInfo);
 		if (Utilities.isValidId(id)) {
 			orgDepartmentDao.update(department);
@@ -44,7 +45,7 @@ public class OrgServiceImpl implements OrgService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(propagation = Propagation.REQUIRED)
 	public OrgGroup saveGroup(Integer id, String name, UserInfo userInfo) {
 		OrgGroup group = new OrgGroup();
 		if (Utilities.isValidId(id)) {

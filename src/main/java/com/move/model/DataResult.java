@@ -8,100 +8,134 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name="data_result")
-@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler"})
+@Table(name = "data_result")
+@JsonIgnoreProperties(value = { "hibernateLazyInitializer", "handler" })
 public class DataResult extends BaseModel implements Serializable {
-        private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    @Column(name = "open_id")
-    private  String openId;
+	@Column(name = "file_id")
+	private Integer fileId;
 
-    @Column(name = "file_id")
-    private  Integer fileId;
+	private Integer value1;
 
-    private  Integer value1;
+	private Integer value2;
 
-    private  Integer value2;
+	private Integer value3;
 
-    private  Integer value3;
+	private Integer value4;
 
-    private  Integer value4;
+	private Integer value5;
 
-    private  Integer value5;
+	private Integer value6;
 
-    private  Integer value6;
+	private String month;
 
-    private  String month;
+	@Column(name = "relation_id")
+	private Integer relationId;
+	
+	@Column(name = "relation_type")
+	private String relationType;
+	
+	@Column(name = "person_nub")
+	private Integer personNub;
 
-    public String getOpenId() {
-        return openId;
-    }
+	private Integer total;
 
-    public void setOpenId(String openId) {
-        this.openId = openId;
-    }
 
-    public Integer getFileId() {
-        return fileId;
-    }
+	public Integer getRelationId() {
+		return relationId;
+	}
 
-    public void setFileId(Integer fileId) {
-        this.fileId = fileId;
-    }
+	public void setRelationId(Integer relationId) {
+		this.relationId = relationId;
+	}
 
-    public Integer getValue1() {
-        return value1;
-    }
+	public String getRelationType() {
+		return relationType;
+	}
 
-    public void setValue1(Integer value1) {
-        this.value1 = value1;
-    }
+	public void setRelationType(String relationType) {
+		this.relationType = relationType;
+	}
 
-    public Integer getValue2() {
-        return value2;
-    }
+	public Integer getPersonNub() {
+		return personNub;
+	}
 
-    public void setValue2(Integer value2) {
-        this.value2 = value2;
-    }
+	public void setPersonNub(Integer personNub) {
+		this.personNub = personNub;
+	}
 
-    public Integer getValue3() {
-        return value3;
-    }
 
-    public void setValue3(Integer value3) {
-        this.value3 = value3;
-    }
+	public Integer getTotal() {
+		return total;
+	}
 
-    public Integer getValue4() {
-        return value4;
-    }
+	public void setTotal(Integer total) {
+		this.total = total;
+	}
 
-    public void setValue4(Integer value4) {
-        this.value4 = value4;
-    }
+	public Integer getFileId() {
+		return fileId;
+	}
 
-    public Integer getValue5() {
-        return value5;
-    }
+	public void setFileId(Integer fileId) {
+		this.fileId = fileId;
+	}
 
-    public void setValue5(Integer value5) {
-        this.value5 = value5;
-    }
+	public Integer getValue1() {
+		return value1;
+	}
 
-    public Integer getValue6() {
-        return value6;
-    }
+	public void setValue1(Integer value1) {
+		this.value1 = value1;
+	}
 
-    public void setValue6(Integer value6) {
-        this.value6 = value6;
-    }
+	public Integer getValue2() {
+		return value2;
+	}
 
-    public String getMonth() {
-        return month;
-    }
+	public void setValue2(Integer value2) {
+		this.value2 = value2;
+	}
 
-    public void setMonth(String month) {
-        this.month = month;
-    }
+	public Integer getValue3() {
+		return value3;
+	}
+
+	public void setValue3(Integer value3) {
+		this.value3 = value3;
+	}
+
+	public Integer getValue4() {
+		return value4;
+	}
+
+	public void setValue4(Integer value4) {
+		this.value4 = value4;
+	}
+
+	public Integer getValue5() {
+		return value5;
+	}
+
+	public void setValue5(Integer value5) {
+		this.value5 = value5;
+	}
+
+	public Integer getValue6() {
+		return value6;
+	}
+
+	public void setValue6(Integer value6) {
+		this.value6 = value6;
+	}
+
+	public String getMonth() {
+		return month;
+	}
+
+	public void setMonth(String month) {
+		this.month = month;
+	}
 }

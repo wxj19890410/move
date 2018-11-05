@@ -44,10 +44,10 @@ public class LoginServiveImpl implements LoginService {
 		OrgRelation relation = new OrgRelation();
 		UserInfo userInfo = new UserInfo();
 		if (null != userData) {
-			if (StringUtils.isNotBlank(userData.getOpenID())) {
+			if (StringUtils.isNotBlank(userData.getOpenId())) {
 				qb = new QueryBuilder();
 				QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-				QueryUtils.addWhere(qb, "and t.openId = {0}", userData.getOpenID());
+				QueryUtils.addWhere(qb, "and t.openId = {0}", userData.getOpenId());
 				relation = orgRelationDao.get(qb);
 			} else {
 				relation = null;
@@ -60,7 +60,7 @@ public class LoginServiveImpl implements LoginService {
 			userInfo.setDeptId(relation.getDeptId());
 			userInfo.setGroupName("第一组");
 		}
-		userInfo.setOpenID(userData.getOpenID());
+		userInfo.setOpenID(userData.getOpenId());
 		userInfo.setName(userData.getName());
 		userInfo.setUserId(userData.getId());
 		userInfo.setLoginUuid(UUID.randomUUID().toString());

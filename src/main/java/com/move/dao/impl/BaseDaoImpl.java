@@ -6,15 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 import com.move.dao.BaseDao;
+import com.move.model.BaseModel;
 import com.move.utils.Datagrid;
 import com.move.utils.QueryBuilder;
 import com.move.utils.Utilities;
 import org.hibernate.query.*;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.transform.Transformers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.transaction.annotation.Propagation;
@@ -23,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.google.common.collect.Lists;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 
 @NoRepositoryBean
 public abstract class BaseDaoImpl<T> implements BaseDao<T> {
@@ -38,6 +35,11 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
 
 	public final String HQL_COUNT;
 
+
+	public final String HQL_DATAGRID;
+
+	public final String HQL_DATAGRID1;
+	
 	public final String HQL_LIST_MAP;
 
 	public final String PREFIX_PARAMS = "p";
@@ -58,6 +60,10 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
 		HQL_COUNT = " select cast(count(*) as int) from " + modelClass.getSimpleName() + " t {1} where 1 = 1 {0} ";
 
 		HQL_LIST_MAP = " select {0} from " + modelClass.getSimpleName() + " t {5} where 1 = 1 {1} {3} {4} {2} ";
+		
+		HQL_DATAGRID = " select t.id as id {0} from " + modelClass.getSimpleName() + " t {4} where 1 = 1 {1} {3} {2} ";
+
+		HQL_DATAGRID1 = " select {0} from " + modelClass.getSimpleName() + " t {4} where 1 = 1 {1} {3} {2} ";
 	}
 
 	protected Session getSession() {
@@ -106,6 +112,13 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
 
 		return query;
 	}
+	
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+	public Map<String, Object> getMap(QueryBuilder qb) {
+		List<Map<String, Object>> list = null;
+		list = listMap(qb);
+		return list.size() > 0 ? list.get(0) : null;
+	}
 
 	@SuppressWarnings("unchecked")
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
@@ -129,6 +142,21 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
 	public T save(T obj) {
 		getSession().save(obj);
 		return obj;
+	}
+	
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void batchSave(List<T> objs) {
+		for (int i = 0; i < objs.size(); ++i) {
+			getSession().save(objs.get(i));
+
+			if (i % 50 == 0) {
+				getSession().flush();
+				getSession().clear();
+			}
+		}
+
+		getSession().flush();
+		getSession().clear();
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
