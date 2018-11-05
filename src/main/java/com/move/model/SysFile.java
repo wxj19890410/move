@@ -22,9 +22,6 @@ public class SysFile extends BaseModel implements Serializable {
 
     private  String month;
 
-    @Column(name = "open_id")
-    private  String openId;
-
     public String getPath() {
         return path;
     }
@@ -47,14 +44,6 @@ public class SysFile extends BaseModel implements Serializable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getOpenId() {
-        return openId;
-    }
-
-    public void setOpenId(String openId) {
-        this.openId = openId;
     }
 
     public String getMonth() {

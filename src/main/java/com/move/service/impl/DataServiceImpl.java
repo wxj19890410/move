@@ -44,7 +44,7 @@ public class DataServiceImpl implements DataService {
 
 	@Autowired
 	private OrgDepartmentDao orgDepartmentDao;
-	
+
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public Map<String, Object> originalMap(QueryBuilder qb) {
@@ -67,6 +67,21 @@ public class DataServiceImpl implements DataService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public Integer setAverageData(String month, Integer fileId, UserInfo userInfo) {
+		// 升级源数据
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addSetColumn1(qb, "t.total = t.value1+t.value2+t.value3+t.value4+t.value5+t.value6");
+		QueryUtils.addSetColumn1(qb, "t.userid = (select t1.userid from UserData t1 where t1.mobile = t.mobile)");
+		QueryUtils.addWhereIfNotNull(qb, "and t.month={0}", month);
+		QueryUtils.addWhereIfNotNull(qb, "and t.fileId={0}", fileId);
+		dataOriginalDao.update(qb);
+		// 删除
+		if (StringUtils.isNotBlank(month)) {
+			qb = new QueryBuilder();
+			QueryUtils.addWhere(qb, "and t.month={0}", month);
+			QueryUtils.addWhereIfNotNull(qb, "and t.fileId={0}", fileId);
+			dataResultDao.delete(qb);
+		}
+
 		Date now = new Date();
 		// 插入公司数据
 		StringBuilder sb = new StringBuilder();
@@ -105,9 +120,9 @@ public class DataServiceImpl implements DataService {
 		sb.append(" A.del_flag='0'");
 		sb.append(" and A.month='" + month + "'");
 		dataResultDao.sqlUpdate(sb.toString(), now);
-		QueryBuilder qb = new QueryBuilder();
-		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		QueryUtils.addWhere(qb, "and exists(from OrgRelation t1 where t1.deptId = t.id and t1.delFlag = '0')");
+		qb = new QueryBuilder();
+		QueryUtils.addWhere(qb,
+				"and exists(from OrgRelation t1 where t1.relationId = t.id and t1.relationType='dept')");
 		List<OrgDepartment> orgDepartments = orgDepartmentDao.find(qb);
 
 		// 插入部门数据
@@ -132,7 +147,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(") ");
 			sb.append("select");
 			sb.append(" 'dept'");
-			sb.append(",B.dept_id");
+			sb.append(",B.relation_id");
 			sb.append("," + fileId);
 			sb.append(",'" + month + "'");
 			sb.append(",count(A.id)");
@@ -147,17 +162,17 @@ public class DataServiceImpl implements DataService {
 			sb.append(",:p1");
 			sb.append(",A.create_user");
 			sb.append(" from org_relation B ,data_original A where ");
-			sb.append(" B.del_flag='0'");
+			sb.append(" B.relation_type='dept'");
 			sb.append(" and A.del_flag='0'");
-			sb.append(" and B.open_id=A.open_id");
-			sb.append(" and B.dept_id=" + orgDepartment.getId());
+			sb.append(" and B.userid=A.userid");
+			sb.append(" and B.relation_id=" + orgDepartment.getId());
 			sb.append(" and A.month='" + month + "';");
 			dataResultDao.sqlUpdate(sb.toString(), now);
 		}
 
 		qb = new QueryBuilder();
-		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		QueryUtils.addWhere(qb, "and exists(from OrgRelation t1 where t1.groupId = t.id and t1.delFlag = '0')");
+		QueryUtils.addWhere(qb,
+				"and exists(from OrgRelation t1 where t1.relationId = t.id and t1.relationType = 'tag')");
 		List<OrgGroup> orgGroups = orgGroupDao.find(qb);
 		// 插入部门数据
 		for (OrgGroup orgGroup : orgGroups) {
@@ -180,8 +195,8 @@ public class DataServiceImpl implements DataService {
 			sb.append(",create_user");
 			sb.append(") ");
 			sb.append("select");
-			sb.append(" 'group'");
-			sb.append(",B.group_id");
+			sb.append(" 'tag'");
+			sb.append(",B.relation_id");
 			sb.append("," + fileId);
 			sb.append(",'" + month + "'");
 			sb.append(",count(A.id)");
@@ -196,10 +211,10 @@ public class DataServiceImpl implements DataService {
 			sb.append(",:p1");
 			sb.append(",A.create_user");
 			sb.append(" from org_relation B ,data_original A where ");
-			sb.append(" B.del_flag='0'");
+			sb.append(" B.relation_type='tag'");
 			sb.append(" and A.del_flag='0'");
-			sb.append(" and B.open_id=A.open_id");
-			sb.append(" and B.group_id=" + orgGroup.getId());
+			sb.append(" and B.userid=A.userid");
+			sb.append(" and B.relation_id=" + orgGroup.getTagid());
 			sb.append(" and A.month='" + month + "'");
 			sb.append(";");
 			dataResultDao.sqlUpdate(sb.toString(), now);

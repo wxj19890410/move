@@ -51,6 +51,12 @@ public class FileAction {
             }
             // 设置存放文件的路径
             path ="/files/"+ UUID.randomUUID().toString();
+            
+            File dir = new File(rootPath+"/files");
+            if(!dir.exists()){
+            	dir.mkdir();
+            }
+            
             // 转存文件到指定的路径
             file.transferTo(new File(rootPath+path));
             String finalPath = "/files/"+ trueFileName;

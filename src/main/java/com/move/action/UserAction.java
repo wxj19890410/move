@@ -51,19 +51,20 @@ public class UserAction {
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
 		return userService.findUsers(qb);
 	}
-	
+
 	@GetMapping(value = "userDataGrid")
-	public Object userDataGrid(UserInfo userInfo,Integer start,Integer length,String haveGroup,String haveDept) {
+	public Object userDataGrid(UserInfo userInfo, Integer start, Integer length, String haveGroup, String haveDept) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.setStart(start);
 		qb.setLength(length);
 		QueryUtils.addColumn(qb, "t.id");
-		QueryUtils.addColumn(qb, "t.userid","userid");
-		QueryUtils.addColumn(qb, "t.name","name");
-		QueryUtils.addColumn(qb, "t.position","position");
-		QueryUtils.addColumn(qb, "t.mobile","mobile");
-		QueryUtils.addColumn(qb, "t.email","email");
-		QueryUtils.addColumn(qb, "t.avatar","avatar");
+		QueryUtils.addColumn(qb, "t.userid", "userid");
+		QueryUtils.addColumn(qb, "t.name", "name");
+		QueryUtils.addColumn(qb, "t.position", "position");
+		QueryUtils.addColumn(qb, "t.mobile", "mobile");
+		QueryUtils.addColumn(qb, "t.email", "email");
+		QueryUtils.addColumn(qb, "t.avatar", "avatar");
+		QueryUtils.addWhere(qb, "and t.account is null");
 		return userService.userDataGrid(qb);
 	}
 

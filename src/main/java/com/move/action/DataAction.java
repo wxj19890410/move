@@ -53,7 +53,7 @@ public class DataAction {
 		QueryUtils.addWhereIfNotNull(qb, "and t.userid = {0}", userid);
 		QueryUtils.addWhereIfNotNull(qb, "and t.fileId = {0}", fileId);
 		QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
-		QueryUtils.addJoin(qb, "left join UserData u on u.userid = t.openId and u.delFlag = '0'");
+		QueryUtils.addJoin(qb, "left join UserData u on u.mobile = t.mobile");
 		return dataService.DataGrid(qb);
 	}
 	

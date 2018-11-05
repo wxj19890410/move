@@ -7,6 +7,8 @@ import com.move.dao.SysFileDao;
 import com.move.model.DataOriginal;
 import com.move.model.SysFile;
 import com.move.service.FileService;
+import com.move.utils.QueryBuilder;
+import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
 import com.move.utils.Utilities;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -23,6 +25,7 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -42,7 +45,6 @@ public class FileServiceImpl implements FileService {
 		SysFile sysFile = new SysFile();
 		sysFile.setName(name);
 		sysFile.setExt(ext);
-		sysFile.setOpenId(userInfo.getOpenID());
 		sysFile.setPath(path);
 		sysFile.setMonth(Utilities.formatDate(new Date(), "yyyy-MM"));
 		Utilities.setUserInfo(sysFile, userInfo);
@@ -77,33 +79,45 @@ public class FileServiceImpl implements FileService {
 				if (hssfRow != null) {
 					if (hssfRow.getRowNum() > 0) {
 						dataOriginal = new DataOriginal();
-						if (matchesString(hssfRow.getCell(1)))
-							dataOriginal.setValue1((new Double(hssfRow.getCell(1).toString())).intValue());
+
+						if (null != hssfRow.getCell(1))
+							dataOriginal.setName(hssfRow.getCell(1).toString());
+						else {
+							dataOriginal.setName("用户名缺失");
+						}
+						if (null != hssfRow.getCell(2)) {
+							BigDecimal aa = new BigDecimal(new Double(hssfRow.getCell(2).toString()));
+							dataOriginal.setMobile(aa.toPlainString());
+						}else {
+							dataOriginal.setMobile("联系方式缺失");
+						}
+						if (matchesString(hssfRow.getCell(3)))
+							dataOriginal.setValue1((new Double(hssfRow.getCell(3).toString())).intValue());
 						else {
 							dataOriginal.setValue1(0);
 						}
-						if (matchesString(hssfRow.getCell(2)))
-							dataOriginal.setValue2((new Double(hssfRow.getCell(2).toString())).intValue());
+						if (matchesString(hssfRow.getCell(4)))
+							dataOriginal.setValue2((new Double(hssfRow.getCell(4).toString())).intValue());
 						else {
 							dataOriginal.setValue2(0);
 						}
-						if (matchesString(hssfRow.getCell(3)))
-							dataOriginal.setValue3((new Double(hssfRow.getCell(3).toString())).intValue());
+						if (matchesString(hssfRow.getCell(5)))
+							dataOriginal.setValue3((new Double(hssfRow.getCell(5).toString())).intValue());
 						else {
 							dataOriginal.setValue3(0);
 						}
-						if (matchesString(hssfRow.getCell(4)))
-							dataOriginal.setValue4((new Double(hssfRow.getCell(4).toString())).intValue());
+						if (matchesString(hssfRow.getCell(6)))
+							dataOriginal.setValue4((new Double(hssfRow.getCell(6).toString())).intValue());
 						else {
 							dataOriginal.setValue4(0);
 						}
-						if (matchesString(hssfRow.getCell(5)))
-							dataOriginal.setValue5((new Double(hssfRow.getCell(5).toString())).intValue());
+						if (matchesString(hssfRow.getCell(7)))
+							dataOriginal.setValue5((new Double(hssfRow.getCell(7).toString())).intValue());
 						else {
 							dataOriginal.setValue5(0);
 						}
-						if (matchesString(hssfRow.getCell(6)))
-							dataOriginal.setValue6((new Double(hssfRow.getCell(6).toString())).intValue());
+						if (matchesString(hssfRow.getCell(8)))
+							dataOriginal.setValue6((new Double(hssfRow.getCell(8).toString())).intValue());
 						else {
 							dataOriginal.setValue6(0);
 						}
@@ -111,12 +125,17 @@ public class FileServiceImpl implements FileService {
 						dataOriginal.setMonth(month);
 						Utilities.setUserInfo(dataOriginal, userInfo);
 						list.add(dataOriginal);
-						dataOriginalDao.save(dataOriginal);
+
 					}
 				}
 			}
-			// System.out.print("行数:"+list.size());
+			// 刪除之前數據
+			QueryBuilder qb = new QueryBuilder();
+			QueryUtils.addWhere(qb, " and month = {0}", month);
+			dataOriginalDao.delete(qb);
 
+			dataOriginalDao.batchSave(list);
+			// System.out.print("行数:"+list.size());
 		}
 	}
 

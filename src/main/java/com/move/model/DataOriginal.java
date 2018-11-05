@@ -13,8 +13,11 @@ import java.io.Serializable;
 public class DataOriginal extends BaseModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @Column(name = "open_id")
-    private  String openId;
+    private  String  userid;
+    
+    private  String  name;
+    
+    private  String  mobile;
 
     @Column(name = "file_id")
     private  Integer fileId;
@@ -37,15 +40,32 @@ public class DataOriginal extends BaseModel implements Serializable {
     private  String month;
 
 
-    public String getOpenId() {
-        return openId;
-    }
 
-    public void setOpenId(String openId) {
-        this.openId = openId;
-    }
+    public String getUserid() {
+		return userid;
+	}
 
-    public Integer getFileId() {
+	public void setUserid(String userid) {
+		this.userid = userid;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getMobile() {
+		return mobile;
+	}
+
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+
+	public Integer getFileId() {
         return fileId;
     }
 
