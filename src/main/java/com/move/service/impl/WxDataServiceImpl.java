@@ -309,48 +309,17 @@ public class WxDataServiceImpl implements WxDataService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public Map<String, Object> getUserInfo(String userid) {
-		// 获取 access_token
-		String access_token = Globals.ACCESS_TOKEN;
-		Date now = new Date();
-		if (null == access_token || Globals.EXPIRES_DATE < now.getTime()) {
-			access_token = this.getAccessToken();
-		}
-		String data = "https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token=" + access_token + "&userid=" + userid;
-		UserData userData = new UserData();
-		try {
-			URL url = new URL(data);
-			URLConnection URLconnection = url.openConnection();
-			HttpURLConnection httpConnection = (HttpURLConnection) URLconnection;
-			httpConnection.setRequestProperty("Content-Type", "application/json");
-			httpConnection.setRequestProperty("contentType", "UTF-8");
-			httpConnection.setRequestProperty("Accept-Charset", "UTF-8");
-			int responseCode = httpConnection.getResponseCode();
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				InputStream in = httpConnection.getInputStream();
-				InputStreamReader isr = new InputStreamReader(in, "UTF-8");
-				BufferedReader bufr = new BufferedReader(isr);
-				String str;
-				while ((str = bufr.readLine()) != null) {
-					JsonObject jo = JsonUtils.fromJson(str).getAsJsonObject();
-					userData = JsonUtils.fromJson(jo, UserData.class);
-				}
-				bufr.close();
-			} else {
-				System.err.println("失败");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		UserData userData = this.getPersonInfo(userid);
 		Map<String, Object> result = new HashMap<>();
 		if (null != userData && StringUtils.isNotBlank(userData.getUserid())) {
 			result.put("position", userData.getPosition());
 			result.put("name", userData.getName());
 			result.put("mobile", userData.getMobile());
 			result.put("avatar1", userData.getAvatar());
-			if(StringUtils.isNotBlank(userData.getAvatar())){
-				result.put("avatar", userData.getAvatar().substring(0,userData.getAvatar().length()-2) + "/100");
+			if (StringUtils.isNotBlank(userData.getAvatar())) {
+				result.put("avatar", userData.getAvatar().substring(0, userData.getAvatar().length() - 2) + "/100");
 			}
-			
+
 		}
 		// 获取 部门
 		QueryBuilder qb = new QueryBuilder();
@@ -384,6 +353,88 @@ public class WxDataServiceImpl implements WxDataService {
 		}
 		result.put("tag", tag);
 		result.put("dept", dept);
+		return result;
+	}
+
+	private UserData getPersonInfo(String userid) {
+		// 获取 access_token
+		String access_token = Globals.ACCESS_TOKEN;
+		Date now = new Date();
+		if (null == access_token || Globals.EXPIRES_DATE < now.getTime()) {
+			access_token = this.getAccessToken();
+		}
+		String data = "https://qyapi.weixin.qq.com/cgi-bin/user/get?access_token=" + access_token + "&userid=" + userid;
+		UserData userData = new UserData();
+		try {
+			URL url = new URL(data);
+			URLConnection URLconnection = url.openConnection();
+			HttpURLConnection httpConnection = (HttpURLConnection) URLconnection;
+			httpConnection.setRequestProperty("Content-Type", "application/json");
+			httpConnection.setRequestProperty("contentType", "UTF-8");
+			httpConnection.setRequestProperty("Accept-Charset", "UTF-8");
+			int responseCode = httpConnection.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				InputStream in = httpConnection.getInputStream();
+				InputStreamReader isr = new InputStreamReader(in, "UTF-8");
+				BufferedReader bufr = new BufferedReader(isr);
+				String str;
+				while ((str = bufr.readLine()) != null) {
+					JsonObject jo = JsonUtils.fromJson(str).getAsJsonObject();
+					userData = JsonUtils.fromJson(jo, UserData.class);
+				}
+				bufr.close();
+			} else {
+				System.err.println("失败");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return userData;
+
+	}
+
+	@Override
+	public Map<String, Object> loadInfo(String codeId) {
+		// 获取 access_token
+		String access_token = Globals.ACCESS_TOKEN;
+		Date now = new Date();
+		if (null == access_token || Globals.EXPIRES_DATE < now.getTime()) {
+			access_token = this.getAccessToken();
+		}
+		// 获取人员userid
+		String data = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token=" + access_token + "&code="
+				+ codeId;
+		WxUtilModel wxUtilModel = new WxUtilModel();
+		try {
+			URL url = new URL(data);
+			URLConnection URLconnection = url.openConnection();
+			HttpURLConnection httpConnection = (HttpURLConnection) URLconnection;
+			httpConnection.setRequestProperty("Content-Type", "application/json");
+			httpConnection.setRequestProperty("contentType", "UTF-8");
+			httpConnection.setRequestProperty("Accept-Charset", "UTF-8");
+			int responseCode = httpConnection.getResponseCode();
+			if (responseCode == HttpURLConnection.HTTP_OK) {
+				InputStream in = httpConnection.getInputStream();
+				InputStreamReader isr = new InputStreamReader(in, "UTF-8");
+				BufferedReader bufr = new BufferedReader(isr);
+				String str;
+				while ((str = bufr.readLine()) != null) {
+					JsonObject jo = JsonUtils.fromJson(str).getAsJsonObject();
+					wxUtilModel = JsonUtils.fromJson(jo, WxUtilModel.class);
+				}
+				bufr.close();
+			} else {
+				System.err.println("失败");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		String userid = wxUtilModel.getUserid();
+		// 获取个人信息
+		UserData userData = this.getPersonInfo(userid);
+		Map<String, Object> result = new HashMap<>();
+		result.put("userid", userid);
+		result.put("userInfo", userData);
 		return result;
 	}
 

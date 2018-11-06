@@ -6,6 +6,7 @@ import com.move.model.UserData;
 import com.move.service.DataService;
 import com.move.service.OrgService;
 import com.move.service.UserService;
+import com.move.service.WxDataService;
 import com.move.utils.DictUtils;
 import com.move.utils.QueryBuilder;
 import com.move.utils.QueryUtils;
@@ -32,6 +33,10 @@ public class MobileAction {
 
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private WxDataService wxDataService;
+	
 
 	@GetMapping(value = "getHistoryData")
 	public Object findOriginal(String openId, UserInfo userInfo) {
@@ -109,6 +114,16 @@ public class MobileAction {
 		QueryUtils.addJoin(qb, "left join UserData user on user.openId = t.openId and u.delFlag = '0'");
 		QueryUtils.addOrder(qb, "t.total desc");
 		return dataService.DataGrid(qb);
+	}
+	/***
+	 * 手机登录
+	 * @param userid
+	 * @return
+	 */
+	@GetMapping(value = "loadInfo")
+	public Object loadInfo(String codeId) {
+		// 获取 access_token
+		return wxDataService.loadInfo(codeId);
 	}
 
 }

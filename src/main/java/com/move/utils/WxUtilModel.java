@@ -13,6 +13,8 @@ public class WxUtilModel {
 	
 	private String errmsg;
 	
+	private String userid;
+	
 	private List<OrgDepartment> department;
 	
 	private List<OrgGroup> taglist;
@@ -68,6 +70,14 @@ public class WxUtilModel {
 
 	public void setAccess_token(String access_token) {
 		this.access_token = access_token;
+	}
+
+	public String getUserid() {
+		return userid;
+	}
+
+	public void setUserid(String userid) {
+		this.userid = userid;
 	}
 
 }
