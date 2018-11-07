@@ -36,6 +36,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping(value = "user")
 public class UserAction {

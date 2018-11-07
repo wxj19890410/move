@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,6 +27,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 
+@CrossOrigin
 @RestController
 @RequestMapping(value="file")
 public class FileAction {

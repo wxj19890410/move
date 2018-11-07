@@ -15,6 +15,8 @@ public class WxUtilModel {
 	
 	private String userid;
 	
+	private String UserId;
+	
 	private List<OrgDepartment> department;
 	
 	private List<OrgGroup> taglist;
@@ -78,6 +80,14 @@ public class WxUtilModel {
 
 	public void setUserid(String userid) {
 		this.userid = userid;
+	}
+
+	public String getUserId() {
+		return UserId;
+	}
+
+	public void setUserId(String userId) {
+		UserId = userId;
 	}
 
 }

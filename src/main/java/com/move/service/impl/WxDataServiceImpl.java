@@ -404,7 +404,8 @@ public class WxDataServiceImpl implements WxDataService {
 		if (StringUtils.isNotBlank(codeId) && StringUtils.isBlank(userid)) {
 			// 获取人员userid
 			String data = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token=" + access_token + "&code="
-					+ codeId;
+					+ codeId + "&agentid=" + Globals.CORP_ID;
+			;
 			WxUtilModel wxUtilModel = new WxUtilModel();
 			try {
 				URL url = new URL(data);
@@ -430,9 +431,9 @@ public class WxDataServiceImpl implements WxDataService {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			userid = wxUtilModel.getUserid();
+			userid = wxUtilModel.getUserId();
 		}
-		userid = "13906748021";
+		// userid = "13906748021";
 		// 获取个人信息
 		UserData userData = this.getPersonInfo(userid);
 		Map<String, Object> result = new HashMap<>();

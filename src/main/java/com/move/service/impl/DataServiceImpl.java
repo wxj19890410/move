@@ -99,7 +99,7 @@ public class DataServiceImpl implements DataService {
 		sb.append(",del_flag");
 		sb.append(",edit_date");
 		sb.append(",create_date");
-		sb.append(",create_user");
+		sb.append(",create_user ");
 		sb.append(")");
 		sb.append("select");
 		sb.append(" 'company'");
@@ -115,7 +115,7 @@ public class DataServiceImpl implements DataService {
 		sb.append(",'0'");
 		sb.append(",:p1");
 		sb.append(",:p1");
-		sb.append(",A.create_user");
+		sb.append(",count(A.create_user)");
 		sb.append(" from data_original A where ");
 		sb.append(" A.del_flag='0'");
 		sb.append(" and A.month='" + month + "'");
@@ -147,7 +147,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(") ");
 			sb.append("select");
 			sb.append(" 'dept'");
-			sb.append(",B.relation_id");
+			sb.append(",count(B.relation_id)");
 			sb.append("," + fileId);
 			sb.append(",'" + month + "'");
 			sb.append(",count(A.id)");
@@ -160,7 +160,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(",'0'");
 			sb.append(",:p1");
 			sb.append(",:p1");
-			sb.append(",A.create_user");
+			sb.append(",count(A.create_user)");
 			sb.append(" from org_relation B ,data_original A where ");
 			sb.append(" B.relation_type='dept'");
 			sb.append(" and A.del_flag='0'");
@@ -196,7 +196,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(") ");
 			sb.append("select");
 			sb.append(" 'tag'");
-			sb.append(",B.relation_id");
+			sb.append(",count(B.relation_id)");
 			sb.append("," + fileId);
 			sb.append(",'" + month + "'");
 			sb.append(",count(A.id)");
@@ -209,7 +209,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(",'0'");
 			sb.append(",:p1");
 			sb.append(",:p1");
-			sb.append(",A.create_user");
+			sb.append(",count(A.create_user)");
 			sb.append(" from org_relation B ,data_original A where ");
 			sb.append(" B.relation_type='tag'");
 			sb.append(" and A.del_flag='0'");
