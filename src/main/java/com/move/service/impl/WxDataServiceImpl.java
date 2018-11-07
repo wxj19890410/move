@@ -394,42 +394,45 @@ public class WxDataServiceImpl implements WxDataService {
 	}
 
 	@Override
-	public Map<String, Object> loadInfo(String codeId) {
+	public Map<String, Object> loadInfo(String codeId, String userid) {
 		// 获取 access_token
 		String access_token = Globals.ACCESS_TOKEN;
 		Date now = new Date();
 		if (null == access_token || Globals.EXPIRES_DATE < now.getTime()) {
 			access_token = this.getAccessToken();
 		}
-		// 获取人员userid
-		String data = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token=" + access_token + "&code="
-				+ codeId;
-		WxUtilModel wxUtilModel = new WxUtilModel();
-		try {
-			URL url = new URL(data);
-			URLConnection URLconnection = url.openConnection();
-			HttpURLConnection httpConnection = (HttpURLConnection) URLconnection;
-			httpConnection.setRequestProperty("Content-Type", "application/json");
-			httpConnection.setRequestProperty("contentType", "UTF-8");
-			httpConnection.setRequestProperty("Accept-Charset", "UTF-8");
-			int responseCode = httpConnection.getResponseCode();
-			if (responseCode == HttpURLConnection.HTTP_OK) {
-				InputStream in = httpConnection.getInputStream();
-				InputStreamReader isr = new InputStreamReader(in, "UTF-8");
-				BufferedReader bufr = new BufferedReader(isr);
-				String str;
-				while ((str = bufr.readLine()) != null) {
-					JsonObject jo = JsonUtils.fromJson(str).getAsJsonObject();
-					wxUtilModel = JsonUtils.fromJson(jo, WxUtilModel.class);
+		if (StringUtils.isNotBlank(codeId) && StringUtils.isBlank(userid)) {
+			// 获取人员userid
+			String data = "https://qyapi.weixin.qq.com/cgi-bin/user/getuserinfo?access_token=" + access_token + "&code="
+					+ codeId;
+			WxUtilModel wxUtilModel = new WxUtilModel();
+			try {
+				URL url = new URL(data);
+				URLConnection URLconnection = url.openConnection();
+				HttpURLConnection httpConnection = (HttpURLConnection) URLconnection;
+				httpConnection.setRequestProperty("Content-Type", "application/json");
+				httpConnection.setRequestProperty("contentType", "UTF-8");
+				httpConnection.setRequestProperty("Accept-Charset", "UTF-8");
+				int responseCode = httpConnection.getResponseCode();
+				if (responseCode == HttpURLConnection.HTTP_OK) {
+					InputStream in = httpConnection.getInputStream();
+					InputStreamReader isr = new InputStreamReader(in, "UTF-8");
+					BufferedReader bufr = new BufferedReader(isr);
+					String str;
+					while ((str = bufr.readLine()) != null) {
+						JsonObject jo = JsonUtils.fromJson(str).getAsJsonObject();
+						wxUtilModel = JsonUtils.fromJson(jo, WxUtilModel.class);
+					}
+					bufr.close();
+				} else {
+					System.err.println("失败");
 				}
-				bufr.close();
-			} else {
-				System.err.println("失败");
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+			userid = wxUtilModel.getUserid();
 		}
-		String userid = wxUtilModel.getUserid();
+		userid = "13906748021";
 		// 获取个人信息
 		UserData userData = this.getPersonInfo(userid);
 		Map<String, Object> result = new HashMap<>();

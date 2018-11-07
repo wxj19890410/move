@@ -172,7 +172,7 @@ public class DataServiceImpl implements DataService {
 
 		qb = new QueryBuilder();
 		QueryUtils.addWhere(qb,
-				"and exists(from OrgRelation t1 where t1.relationId = t.id and t1.relationType = 'tag')");
+				"and exists(from OrgRelation t1 where t1.relationId = t.tagid and t1.relationType = 'tag')");
 		List<OrgGroup> orgGroups = orgGroupDao.find(qb);
 		// 插入部门数据
 		for (OrgGroup orgGroup : orgGroups) {

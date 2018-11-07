@@ -20,6 +20,6 @@ public interface WxDataService {
 
 	public Map<String, Object> getUserInfo(String userid);
 
-	public Map<String, Object>  loadInfo(String codeId);
+	public Map<String, Object>  loadInfo(String codeId, String userid);
 
 }
