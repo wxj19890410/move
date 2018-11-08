@@ -58,7 +58,8 @@ public class FileServiceImpl implements FileService {
 
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void readExcel(String path, String name, Integer fileId, String month, UserInfo userInfo) throws Exception {
-		InputStream is = new FileInputStream(new File(ResourceUtils.getURL("classpath:").getPath() + path));
+		String rootPath = "C:/huoli/huoliJava";
+		InputStream is = new FileInputStream(new File(rootPath + path));
 		Workbook hssfWorkbook = null;
 		if (name.endsWith("xlsx")) {
 			hssfWorkbook = new XSSFWorkbook(is);// Excel 2007
