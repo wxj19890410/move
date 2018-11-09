@@ -3,6 +3,7 @@ package com.move.service.impl;
 import com.google.common.collect.Lists;
 import com.move.dao.OrgRelationDao;
 import com.move.dao.UseDataDao;
+import com.move.exception.NotLogedInException;
 import com.move.model.OrgRelation;
 import com.move.model.UserData;
 import com.move.service.LoginService;
@@ -30,18 +31,22 @@ public class LoginServiveImpl implements LoginService {
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	public UserInfo load(String account, String password, String openId) {
+	public UserInfo load(String account, String password, String openId) throws Exception {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addWhere(qb, "and t.account = {0}", account);
-		QueryUtils.addWhere(qb, "and t.passWord = {0}", password);
+		// QueryUtils.addWhere(qb, "and t.passWord = {0}", password);
 
 		UserData userData = useDataDao.get(qb);
 		OrgRelation relation = new OrgRelation();
 		UserInfo userInfo = new UserInfo();
-		if (null != userData) {
+		if (null == userData) {
+			// 用户不存在
+			throw new Exception("用户不存在");
+		}
+		if (!StringUtils.equals(password, userData.getPassWord())) {
+			// 密码错误
 
-		} else {
-			// 账号不存在
+			throw new Exception("密码错误");
 		}
 		userInfo.setName(userData.getName());
 		userInfo.setUserId(userData.getId());
@@ -70,6 +75,6 @@ public class LoginServiveImpl implements LoginService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public void loadOut(UserInfo userInfo) {
-
+		Globals.USER_INFOS.remove(userInfo.getLoginUuid());
 	}
 }

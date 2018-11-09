@@ -37,7 +37,7 @@ public class OrgAction {
 	public Object findGroupAll(UserInfo userInfo) {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		
+
 		return orgService.findGroup(qb);
 	}
 
@@ -53,56 +53,101 @@ public class OrgAction {
 	}
 
 	@GetMapping(value = "findDept")
-	public Object findDept(UserInfo userInfo,String deptType) {
+	public Object findDept(UserInfo userInfo, String deptType) {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addColumn(qb, "t.id", "id");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
 		return orgService.findDept(qb);
 	}
-	
-	
+
 	@GetMapping(value = "findGroupMap")
 	public Object findGroupMap(UserInfo userInfo) {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addColumn(qb, "t.id");
-		QueryUtils.addColumn(qb, "t.name","name");
+		QueryUtils.addColumn(qb, "t.name", "name");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
 		return orgService.findGroupMap(qb);
 	}
 
 	@GetMapping(value = "findDeptMap")
-	public Object findDeptMap(UserInfo userInfo,String deptType) {
+	public Object findDeptMap(UserInfo userInfo, String deptType) {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addColumn(qb, "t.id");
 		QueryUtils.addColumn(qb, "t.deptType");
-		QueryUtils.addColumn(qb, "t.name","name");
+		QueryUtils.addColumn(qb, "t.name", "name");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
 		QueryUtils.addWhereIfNotNull(qb, "and t.deptType = {0}", deptType);
 		return orgService.findDeptMap(qb);
 	}
-	
+
 	@GetMapping(value = "groupDataGrid")
-	public Object groupDataGrid(UserInfo userInfo,Integer start,Integer length) {
+	public Object groupDataGrid(UserInfo userInfo, Integer start, Integer length) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.setStart(start);
 		qb.setLength(length);
 		QueryUtils.addColumn(qb, "t.id");
 		QueryUtils.addColumn(qb, "t.tagid");
-		QueryUtils.addColumn(qb, "t.tagname","name");
-		QueryUtils.addColumn(qb, "(select count(t1.id) from OrgRelation t1 where t1.relationType ='tag' and t1.relationId = t.tagid)","personNub");
-		
+		QueryUtils.addColumn(qb, "t.tagname", "name");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.value1) from DataResult t1 where t1.relationId = t.tagid and t1.relationType = 'tag' and t1.delFlag = '0')",
+				"study");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.value2) from DataResult t1 where t1.relationId = t.tagid and t1.relationType = 'tag' and t1.delFlag = '0')",
+				"read");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.value3) from DataResult t1 where t1.relationId = t.tagid and t1.relationType = 'tag' and t1.delFlag = '0')",
+				"culture");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.value4) from DataResult t1 where t1.relationId = t.tagid and t1.relationType = 'tag' and t1.delFlag = '0')",
+				"attendance");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.value5) from DataResult t1 where t1.relationId = t.tagid and t1.relationType = 'tag' and t1.delFlag = '0')",
+				"hse");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.value6) from DataResult t1 where t1.relationId = t.tagid and t1.relationType = 'tag' and t1.delFlag = '0')",
+				"improve");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.total) from DataResult t1 where t1.relationId = t.tagid and t1.relationType = 'tag' and t1.delFlag = '0')",
+				"total");
+		QueryUtils.addColumn(qb,
+				"(select count(t1.id) from OrgRelation t1 where t1.relationType ='tag' and t1.relationId = t.tagid)",
+				"personNub");
+
 		return orgService.groupDataGrid(qb);
 	}
-	
+
 	@GetMapping(value = "deptDataGrid")
-	public Object deptDataGrid(UserInfo userInfo,Integer start,Integer length) {
+	public Object deptDataGrid(UserInfo userInfo, Integer start, Integer length) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.setStart(start);
 		qb.setLength(length);
 		QueryUtils.addColumn(qb, "t.id");
 		QueryUtils.addColumn(qb, "t.name");
-		QueryUtils.addColumn(qb, "t.parentid","parentid");
-		QueryUtils.addColumn(qb, "(select count(t1.id) from OrgRelation t1 where t1.relationType ='dept' and t1.relationId = t.id)","personNub");
+		QueryUtils.addColumn(qb, "t.parentid", "parentid");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.value1) from DataResult t1 where t1.relationId = t.id and t1.relationType = 'dept' and t1.delFlag = '0')",
+				"study");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.value2) from DataResult t1 where t1.relationId = t.id and t1.relationType = 'dept' and t1.delFlag = '0')",
+				"read");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.value3) from DataResult t1 where t1.relationId = t.id and t1.relationType = 'dept' and t1.delFlag = '0')",
+				"culture");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.value4) from DataResult t1 where t1.relationId = t.id and t1.relationType = 'dept' and t1.delFlag = '0')",
+				"attendance");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.value5) from DataResult t1 where t1.relationId = t.id and t1.relationType = 'dept' and t1.delFlag = '0')",
+				"hse");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.value6) from DataResult t1 where t1.relationId = t.id and t1.relationType = 'dept' and t1.delFlag = '0')",
+				"improve");
+		QueryUtils.addColumn(qb,
+				"(select avg(t1.total) from DataResult t1 where t1.relationId = t.id and t1.relationType = 'dept' and t1.delFlag = '0')",
+				"total");
+		QueryUtils.addColumn(qb,
+				"(select count(t1.id) from OrgRelation t1 where t1.relationType ='dept' and t1.relationId = t.id)",
+				"personNub");
 		return orgService.deptDataGrid(qb);
 	}
 }

@@ -10,6 +10,7 @@ import com.move.model.OrgDepartment;
 import com.move.model.OrgGroup;
 import com.move.model.OrgRelation;
 import com.move.model.UserData;
+import com.move.model.WeChatData;
 import com.move.service.UserService;
 import com.move.service.WxDataService;
 import com.move.utils.Datagrid;
@@ -23,12 +24,21 @@ import com.move.utils.Utilities;
 import com.move.utils.WxUtilModel;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.apache.poi.hssf.util.HSSFColor.GOLD;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -130,7 +140,7 @@ public class WxDataServiceImpl implements WxDataService {
 
 		List<OrgDepartment> OrgDepartments = wxUtilModel.getDepartment();
 
-		if (null != OrgDepartments && OrgDepartments.size() > 0) {
+		if (null != OrgDepartments && OrgDepartments.size() >= 0) {
 			// 保存数据
 			// 删除之前数据
 			QueryBuilder qb = new QueryBuilder();
@@ -174,7 +184,7 @@ public class WxDataServiceImpl implements WxDataService {
 				List<UserData> lists = Lists.newArrayList();
 				lists = wxUtilModel.getUserlist();
 				userDatas.addAll(lists);
-				if (null != lists && lists.size() > 0) {
+				if (null != lists && lists.size() >= 0) {
 					OrgRelation orgRelation = new OrgRelation();
 					for (UserData userData : lists) {
 						orgRelation = new OrgRelation();
@@ -186,7 +196,7 @@ public class WxDataServiceImpl implements WxDataService {
 				}
 			}
 
-			if (null != orgRelations && orgRelations.size() > 0) {
+			if (null != orgRelations && orgRelations.size() >= 0) {
 				// 删除之前关系
 				qb = new QueryBuilder();
 				QueryUtils.addWhere(qb, " and relationType='dept'");
@@ -194,7 +204,7 @@ public class WxDataServiceImpl implements WxDataService {
 				// 创建关系
 				orgRelationDao.batchSave(orgRelations);
 			}
-			if (null != userDatas && userDatas.size() > 0) {
+			if (null != userDatas && userDatas.size() >= 0) {
 				// 删除人员
 				qb = new QueryBuilder();
 				QueryUtils.addWhere(qb, " and account is null");
@@ -440,6 +450,61 @@ public class WxDataServiceImpl implements WxDataService {
 		result.put("userid", userid);
 		result.put("userInfo", userData);
 		return result;
+	}
+
+	@Override
+	public Object sendMsg(String content) {
+		String access_token = Globals.ACCESS_TOKEN;
+		Date now = new Date();
+		if (null == access_token || Globals.EXPIRES_DATE < now.getTime()) {
+			access_token = this.getAccessToken();
+		}
+		String postData = createPostData("13906748021", "text", Integer.parseInt(Globals.AGENT_ID), "content", content);
+		String response = null;
+		try {
+			response = post("utf-8", "application/json",
+					"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=", postData, access_token);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	/**
+	 * 创建POST BODY
+	 */
+	private String createPostData(String touser, String msgtype, int agent_id, String contentKey, String contentValue) {
+		WeChatData weChatData = new WeChatData();
+		weChatData.setTouser(touser);
+		weChatData.setAgentid(agent_id);
+		weChatData.setMsgtype(msgtype);
+		Map<Object, Object> content = new HashMap<Object, Object>();
+		content.put(contentKey, contentValue
+				+ "/n 点击查看<a href=\"https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx1575c3f8d572890d&redirect_uri=http://huoli.whchlor-alkali.com&response_type=code&scope=snsapi_base&agentid=1000033\">活力指数</a>");
+		weChatData.setText(content);
+		return JsonUtils.toJson(weChatData);
+	}
+
+	/**
+	 * POST请求
+	 */
+	private String post(String charset, String contentType, String url, String data, String token) throws IOException {
+		String CONTENT_TYPE = "Content-Type";
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		HttpPost httpPost = new HttpPost(url + token);
+		httpPost.setHeader(CONTENT_TYPE, contentType);
+		httpPost.setEntity(new StringEntity(data, charset));
+		CloseableHttpResponse response = httpclient.execute(httpPost);
+		String resp;
+		try {
+			HttpEntity entity = response.getEntity();
+			resp = EntityUtils.toString(entity, charset);
+			EntityUtils.consume(entity);
+		} finally {
+			response.close();
+		}
+		return resp;
 	}
 
 }

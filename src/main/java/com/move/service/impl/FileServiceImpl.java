@@ -11,6 +11,8 @@ import com.move.utils.QueryBuilder;
 import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
 import com.move.utils.Utilities;
+
+import org.apache.commons.lang.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -40,13 +42,18 @@ public class FileServiceImpl implements FileService {
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	public SysFile setFileData(String name, String ext, String path, UserInfo userInfo) {
-
+	public SysFile setFileData(String name, String ext, String path, String month, UserInfo userInfo) {
+		// 刪除之前數據
+		if (StringUtils.isNotBlank(month)) {
+			QueryBuilder qb = new QueryBuilder();
+			QueryUtils.addWhere(qb, " and month={0}", month);
+			sysFileDao.delete(qb);
+		}
 		SysFile sysFile = new SysFile();
 		sysFile.setName(name);
 		sysFile.setExt(ext);
 		sysFile.setPath(path);
-		sysFile.setMonth(Utilities.formatDate(new Date(), "yyyy-MM"));
+		sysFile.setMonth(month);
 		Utilities.setUserInfo(sysFile, userInfo);
 		sysFileDao.save(sysFile);
 		try {
@@ -89,7 +96,7 @@ public class FileServiceImpl implements FileService {
 						if (null != hssfRow.getCell(2)) {
 							BigDecimal aa = new BigDecimal(new Double(hssfRow.getCell(2).toString()));
 							dataOriginal.setMobile(aa.toPlainString());
-						}else {
+						} else {
 							dataOriginal.setMobile("联系方式缺失");
 						}
 						if (matchesString(hssfRow.getCell(3)))

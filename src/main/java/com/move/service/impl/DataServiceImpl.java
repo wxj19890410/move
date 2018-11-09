@@ -5,6 +5,7 @@ import com.move.dao.DataOriginalDao;
 import com.move.dao.DataResultDao;
 import com.move.dao.OrgGroupDao;
 import com.move.dao.OrgRelationDao;
+import com.move.dao.SysFileDao;
 import com.move.model.DataOriginal;
 import com.move.model.DataResult;
 import com.move.model.OrgDepartment;
@@ -38,7 +39,10 @@ public class DataServiceImpl implements DataService {
 
 	@Autowired
 	private OrgRelationDao orgRelationDao;
-
+	
+	@Autowired
+	private SysFileDao sysFileDao;
+ 
 	@Autowired
 	private OrgGroupDao orgGroupDao;
 
@@ -48,8 +52,12 @@ public class DataServiceImpl implements DataService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public Map<String, Object> originalMap(QueryBuilder qb) {
-		// TODO Auto-generated method stub
 		return dataOriginalDao.getMap(qb);
+	}
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+	public Datagrid sysFlieGrid(QueryBuilder qb) {
+		return sysFileDao.datagrid(qb);
 	}
 
 	@Override
@@ -96,6 +104,7 @@ public class DataServiceImpl implements DataService {
 		sb.append(",value4");
 		sb.append(",value5");
 		sb.append(",value6");
+		sb.append(",total");
 		sb.append(",del_flag");
 		sb.append(",edit_date");
 		sb.append(",create_date");
@@ -112,6 +121,7 @@ public class DataServiceImpl implements DataService {
 		sb.append(",avg(A.value4)");
 		sb.append(",avg(A.value5)");
 		sb.append(",avg(A.value6)");
+		sb.append(",avg(A.total)");
 		sb.append(",'0'");
 		sb.append(",:p1");
 		sb.append(",:p1");
@@ -140,6 +150,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(",value4");
 			sb.append(",value5");
 			sb.append(",value6");
+			sb.append(",total");
 			sb.append(",del_flag");
 			sb.append(",edit_date");
 			sb.append(",create_date");
@@ -157,6 +168,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(",avg(A.value4)");
 			sb.append(",avg(A.value5)");
 			sb.append(",avg(A.value6)");
+			sb.append(",avg(A.total)");
 			sb.append(",'0'");
 			sb.append(",:p1");
 			sb.append(",:p1");
@@ -219,6 +231,10 @@ public class DataServiceImpl implements DataService {
 			sb.append(";");
 			dataResultDao.sqlUpdate(sb.toString(), now);
 		}
+		//设置公司  班组 平均值
+		
+		
+		
 
 		return orgDepartments.size() + orgGroups.size() + 1;
 	}

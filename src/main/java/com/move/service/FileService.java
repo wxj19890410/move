@@ -5,5 +5,5 @@ import com.move.utils.UserInfo;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface FileService {
-    public SysFile setFileData(String name,String ext,String path, UserInfo userInfo);
+    public SysFile setFileData(String name,String ext,String path, String month, UserInfo userInfo);
 }

@@ -169,5 +169,17 @@ public class MobileAction {
 		// 获取 access_token
 		return wxDataService.loadInfo(codeId, userid);
 	}
+	
+	/***
+	 * 发送消息
+	 * 
+	 * @param userid
+	 * @return
+	 */
+	@GetMapping(value = "sendMsg")
+	public Object sendMsg(String content) {
+		// 获取 access_token
+		return wxDataService.sendMsg(content);
+	}
 
 }

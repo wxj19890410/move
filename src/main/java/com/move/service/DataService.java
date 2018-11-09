@@ -15,4 +15,5 @@ public interface DataService  {
 	public Datagrid DataGrid(QueryBuilder qb);
 	public Integer setAverageData(String month, Integer fileId, UserInfo userInfo);
 	public Map<String, Object> originalMap(QueryBuilder qb);
+	public Datagrid sysFlieGrid(QueryBuilder qb);
 }

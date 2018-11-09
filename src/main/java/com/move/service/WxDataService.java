@@ -22,4 +22,6 @@ public interface WxDataService {
 
 	public Map<String, Object>  loadInfo(String codeId, String userid);
 
+	public Object sendMsg(String content);
+
 }
