@@ -4,6 +4,10 @@ import com.move.model.UserData;
 import com.move.service.LoginService;
 import com.move.service.UserService;
 import com.move.utils.UserInfo;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,8 +30,10 @@ public class LoginAction {
 
 	@GetMapping(value = "loadOut")
 	public Object loadInfo(UserInfo userInfo) {
+		Map<String, Object> data = new HashMap<>();
 		UserData userData = new UserData();
 		loginService.loadOut(userInfo);
-		return "success";
+		data.put("success", true);
+		return data;
 	}
 }

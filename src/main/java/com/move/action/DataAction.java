@@ -6,6 +6,8 @@ import com.move.utils.DictUtils;
 import com.move.utils.QueryBuilder;
 import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
+
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +38,7 @@ public class DataAction {
 
 	@GetMapping(value = "dataDataGrid")
 	public Object dataDataGrid(UserInfo userInfo, Integer start, Integer length, String userid, String month,
-			Integer fileId) {
+			Integer fileId, String inputSearch) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.setStart(start);
 		qb.setLength(length);
@@ -55,11 +57,14 @@ public class DataAction {
 		QueryUtils.addWhereIfNotNull(qb, "and t.userid = {0}", userid);
 		QueryUtils.addWhereIfNotNull(qb, "and t.fileId = {0}", fileId);
 		QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
+		if (StringUtils.isNotBlank(inputSearch)) {
+			QueryUtils.addWhereIfNotNull(qb, "and t.name like {0}", "%" + inputSearch + "%");
+		}
 		QueryUtils.addJoin(qb, "left join UserData u on u.mobile = t.mobile");
 		QueryUtils.addOrder(qb, "t.month desc");
 		return dataService.DataGrid(qb);
 	}
-	
+
 	@GetMapping(value = "fileDatagrid")
 	public Object fileDatagrid(UserInfo userInfo, Integer start, Integer length) {
 		QueryBuilder qb = new QueryBuilder();

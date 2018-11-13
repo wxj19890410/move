@@ -48,7 +48,7 @@ public class LoginServiveImpl implements LoginService {
 
 			throw new Exception("密码错误");
 		}
-		userInfo.setName(userData.getName());
+		userInfo.setName(userData.getAccount());
 		userInfo.setUserId(userData.getId());
 		userInfo.setLoginUuid(UUID.randomUUID().toString());
 		userInfo.setLoginDate(new Date());
