@@ -83,6 +83,7 @@ public class DataResult extends BaseModel implements Serializable {
 		this.fileId = fileId;
 	}
 
+
 	public Integer getValue1() {
 		return value1;
 	}

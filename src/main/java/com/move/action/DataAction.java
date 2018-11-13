@@ -43,6 +43,7 @@ public class DataAction {
 		qb.setStart(start);
 		qb.setLength(length);
 		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb, "t.userid", "userid");
 		QueryUtils.addColumn(qb, "t.mobile", "mobile");
 		QueryUtils.addColumn(qb, "t.name", "userName");
 		QueryUtils.addColumn(qb, "t.month", "month");
@@ -56,7 +57,9 @@ public class DataAction {
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
 		QueryUtils.addWhereIfNotNull(qb, "and t.userid = {0}", userid);
 		QueryUtils.addWhereIfNotNull(qb, "and t.fileId = {0}", fileId);
-		QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
+		if (StringUtils.isNotBlank(month)) {
+			QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
+		}
 		if (StringUtils.isNotBlank(inputSearch)) {
 			QueryUtils.addWhereIfNotNull(qb, "and t.name like {0}", "%" + inputSearch + "%");
 		}
@@ -84,4 +87,36 @@ public class DataAction {
 		return dataService.setAverageData(month, fileId, userInfo);
 	}
 
+	@GetMapping(value = "msgHistoryDatagrid")
+	public Object msgHistoryDatagrid(UserInfo userInfo, Integer start, Integer length, String month,
+			String inputSearch) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.setStart(start);
+		qb.setLength(length);
+		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb, "t.userid", "userid");
+		QueryUtils.addColumn(qb, "t.month", "month");
+		QueryUtils.addColumn(qb, "u.name", "name");
+		QueryUtils.addColumn(qb, "u.mobile", "mobile");
+		QueryUtils.addColumn(qb, "t.createName", "createName");
+		QueryUtils.addColumn(qb, "t.month", "month");
+		QueryUtils.addColumn(qb, "t.content", "content");
+		QueryUtils.addColumn(qb, "'已发送'", "state");
+		QueryUtils.addColumn(qb, "t.createDate", "createDate");
+		if (StringUtils.isNotBlank(month)) {
+			QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
+		}
+		if (StringUtils.isNotBlank(inputSearch)) {
+			QueryUtils.addWhereIfNotNull(qb, "and (u.name like {0} or t.content like {0})", "%" + inputSearch + "%");
+		}
+		QueryUtils.addJoin(qb, "left join UserData u on u.userid = t.userid");
+		QueryUtils.addOrder(qb, "t.id desc");
+		return dataService.msgHistoryDatagrid(qb);
+	}
+
+	@GetMapping(value = "originalUpdate")
+	public Object originalUpdate(Integer id, Integer value1, Integer value2, Integer value3, Integer value4, Integer value5,
+			Integer value6, UserInfo userInfo) {
+		return dataService.originalUpdate(id, value1, value2, value3, value4, value5, value6, userInfo);
+	}
 }

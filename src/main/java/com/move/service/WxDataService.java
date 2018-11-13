@@ -22,6 +22,6 @@ public interface WxDataService {
 
 	public Map<String, Object>  loadInfo(String codeId, String userid);
 
-	public Object sendMsg(String content);
+	public Object sendMsg(String content, UserInfo userInfo, String month);
 
 }

@@ -10,7 +10,6 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-
 /**
  * 全局帮助类
  * 
@@ -21,6 +20,7 @@ public class Utilities {
 	public static String format(String str, Object... args) {
 		return MessageFormat.format(str.replaceAll("'", "''"), args);
 	}
+
 	/**
 	 * 日期转换成字符串
 	 *
@@ -40,8 +40,9 @@ public class Utilities {
 
 		return null;
 	}
+
 	public static String newFilePath() {
-		String path =   Utilities.formatDate(new Date(), "yyyy-MM") + "/";
+		String path = Utilities.formatDate(new Date(), "yyyy-MM") + "/";
 
 		if (!new File(getFilePath(path)).exists()) {
 			new File(getFilePath(path)).mkdirs();
@@ -49,6 +50,7 @@ public class Utilities {
 
 		return path;
 	}
+
 	public static String newFileName() {
 		return newFilePath() + UUID.randomUUID().toString();
 	}
@@ -64,19 +66,19 @@ public class Utilities {
 	 *            主键
 	 * @return 是否大于0
 	 */
-	public static boolean isValidId(Integer  id) {
+	public static boolean isValidId(Integer id) {
 		return id != null && id > 0;
 	}
 
 	public static void setUserInfo(BaseModel model, UserInfo userInfo) {
-        Date now = new Date();
+		Date now = new Date();
 		if (userInfo != null) {
 			model.setCreateUser(userInfo.getUserId());
 			model.setCreateDate(now);
 			model.setEditDate(now);
 			if (!Utilities.isValidId(model.getId())) {
 				model.setDelFlag(DictUtils.NO);
-				model.setCreateDate(now);
+				model.setEditDate(now);
 			}
 		} else {
 			model.setEditDate(now);
@@ -100,7 +102,6 @@ public class Utilities {
 		return obj1 != null ? obj1.equals(obj2) : obj2 == null;
 	}
 
-
 	/**
 	 * 分隔字符串
 	 *
@@ -123,6 +124,7 @@ public class Utilities {
 
 		return result;
 	}
+
 	/**
 	 * 增加天数 小时 分钟
 	 *
@@ -140,6 +142,7 @@ public class Utilities {
 		ca.add(Calendar.MINUTE, Utilities.ifNull(minute));
 		return ca.getTime();
 	}
+
 	/**
 	 * 如果为空值返回0
 	 *

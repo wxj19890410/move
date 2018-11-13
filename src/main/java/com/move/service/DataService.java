@@ -16,4 +16,9 @@ public interface DataService  {
 	public Integer setAverageData(String month, Integer fileId, UserInfo userInfo);
 	public Map<String, Object> originalMap(QueryBuilder qb);
 	public Datagrid sysFlieGrid(QueryBuilder qb);
+	public DataResult getDataResult(QueryBuilder qb);
+	public List<DataResult> resultList(QueryBuilder qb);
+	public Datagrid msgHistoryDatagrid(QueryBuilder qb);
+	public DataOriginal originalUpdate(Integer id, Integer value1, Integer value2, Integer value3, Integer value4, Integer value5,
+			Integer value6, UserInfo userInfo);
 }

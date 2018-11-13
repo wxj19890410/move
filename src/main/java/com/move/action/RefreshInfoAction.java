@@ -56,4 +56,15 @@ public class RefreshInfoAction {
 	public Object refreshDept(UserInfo userInfo) {
 		return wxDataService.setDept(userInfo);
 	}
+	/***
+	 * 发送消息
+	 * 
+	 * @param userid
+	 * @return
+	 */
+	@GetMapping(value = "sendMsg")
+	public Object sendMsg(String content , UserInfo userInfo,String month) {
+		// 获取 access_token
+		return wxDataService.sendMsg(content,userInfo,month);
+	}
 }

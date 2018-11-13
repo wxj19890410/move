@@ -40,6 +40,7 @@ public class DataOriginal extends BaseModel implements Serializable {
     private  String month;
 
 
+    
 
     public String getUserid() {
 		return userid;

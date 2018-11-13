@@ -1,12 +1,16 @@
 package com.move.service.impl;
 
+import com.move.dao.DeptRelationDao;
 import com.move.dao.OrgDepartmentDao;
 import com.move.dao.OrgGroupDao;
+import com.move.model.DeptRelation;
+import com.move.model.IgnoreUsers;
 import com.move.model.OrgDepartment;
 import com.move.model.OrgGroup;
 import com.move.service.OrgService;
 import com.move.utils.Datagrid;
 import com.move.utils.QueryBuilder;
+import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
 import com.move.utils.Utilities;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -25,6 +30,10 @@ public class OrgServiceImpl implements OrgService {
 
 	@Autowired
 	private OrgGroupDao orgGroupDao;
+	
+
+	@Autowired
+	private DeptRelationDao deptRelationDao;
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -105,6 +114,21 @@ public class OrgServiceImpl implements OrgService {
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public Datagrid deptDataGrid(QueryBuilder qb) {
 		return orgDepartmentDao.datagrid(qb);
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public DeptRelation setDeptType(Integer id, String deptType, UserInfo userInfo) {
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addWhere(qb, "and t.deptId = {0}", id);
+		deptRelationDao.delete(qb);
+		Date now = new Date();
+		DeptRelation deptRelation = new DeptRelation();
+		deptRelation.setCreateDate(now);
+		deptRelation.setEditDate(now);
+		deptRelation.setDeptType(deptType);
+		deptRelation.setDeptId(id);
+		return deptRelationDao.save(deptRelation);
 	}
 
 }

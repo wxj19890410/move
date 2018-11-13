@@ -3,6 +3,7 @@ package com.move.service.impl;
 import com.move.dao.OrgDepartmentDao;
 import com.move.dao.DataOriginalDao;
 import com.move.dao.DataResultDao;
+import com.move.dao.MsgHistoryDao;
 import com.move.dao.OrgGroupDao;
 import com.move.dao.OrgRelationDao;
 import com.move.dao.SysFileDao;
@@ -39,21 +40,37 @@ public class DataServiceImpl implements DataService {
 
 	@Autowired
 	private OrgRelationDao orgRelationDao;
-	
+
 	@Autowired
 	private SysFileDao sysFileDao;
- 
+
 	@Autowired
 	private OrgGroupDao orgGroupDao;
 
 	@Autowired
 	private OrgDepartmentDao orgDepartmentDao;
 
+	@Autowired
+	private MsgHistoryDao msgHistoryDao;
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+	public Datagrid msgHistoryDatagrid(QueryBuilder qb) {
+		return msgHistoryDao.datagrid(qb);
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+	public List<DataResult> resultList(QueryBuilder qb) {
+		return dataResultDao.find(qb);
+	}
+
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public Map<String, Object> originalMap(QueryBuilder qb) {
 		return dataOriginalDao.getMap(qb);
 	}
+
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public Datagrid sysFlieGrid(QueryBuilder qb) {
@@ -70,6 +87,12 @@ public class DataServiceImpl implements DataService {
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public Datagrid DataGrid(QueryBuilder qb) {
 		return dataOriginalDao.datagrid(qb);
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+	public DataResult getDataResult(QueryBuilder qb) {
+		return dataResultDao.get(qb);
 	}
 
 	@Override
@@ -137,6 +160,7 @@ public class DataServiceImpl implements DataService {
 
 		// 插入部门数据
 		for (OrgDepartment orgDepartment : orgDepartments) {
+			System.out.println(orgDepartment.getId());
 			sb = new StringBuilder();
 			sb.append("insert into data_result (");
 			sb.append(" relation_type");
@@ -158,7 +182,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(") ");
 			sb.append("select");
 			sb.append(" 'dept'");
-			sb.append(",count(B.relation_id)");
+			sb.append(",:p2");
 			sb.append("," + fileId);
 			sb.append(",'" + month + "'");
 			sb.append(",count(A.id)");
@@ -179,7 +203,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(" and B.userid=A.userid");
 			sb.append(" and B.relation_id=" + orgDepartment.getId());
 			sb.append(" and A.month='" + month + "';");
-			dataResultDao.sqlUpdate(sb.toString(), now);
+			dataResultDao.sqlUpdate(sb.toString(), now, orgDepartment.getId());
 		}
 
 		qb = new QueryBuilder();
@@ -201,6 +225,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(",value4");
 			sb.append(",value5");
 			sb.append(",value6");
+			sb.append(",total");
 			sb.append(",del_flag");
 			sb.append(",edit_date");
 			sb.append(",create_date");
@@ -208,7 +233,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(") ");
 			sb.append("select");
 			sb.append(" 'tag'");
-			sb.append(",count(B.relation_id)");
+			sb.append(",:p2");
 			sb.append("," + fileId);
 			sb.append(",'" + month + "'");
 			sb.append(",count(A.id)");
@@ -218,6 +243,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(",avg(A.value4)");
 			sb.append(",avg(A.value5)");
 			sb.append(",avg(A.value6)");
+			sb.append(",avg(A.total)");
 			sb.append(",'0'");
 			sb.append(",:p1");
 			sb.append(",:p1");
@@ -229,14 +255,26 @@ public class DataServiceImpl implements DataService {
 			sb.append(" and B.relation_id=" + orgGroup.getTagid());
 			sb.append(" and A.month='" + month + "'");
 			sb.append(";");
-			dataResultDao.sqlUpdate(sb.toString(), now);
+			dataResultDao.sqlUpdate(sb.toString(), now, orgGroup.getTagid());
 		}
-		//设置公司  班组 平均值
-		
-		
-		
+		// 设置公司 班组 平均值
 
 		return orgDepartments.size() + orgGroups.size() + 1;
+	}
+
+	@Override
+	public DataOriginal originalUpdate(Integer id, Integer value1, Integer value2, Integer value3, Integer value4,
+			Integer value5, Integer value6, UserInfo userInfo) {
+
+		DataOriginal data = dataOriginalDao.get(id);
+		data.setValue1(value1);
+		data.setValue2(value2);
+		data.setValue3(value3);
+		data.setValue4(value4);
+		data.setValue5(value5);
+		data.setValue6(value6);
+		Utilities.setUserInfo(data, userInfo);
+		return dataOriginalDao.update(data);
 	}
 
 }

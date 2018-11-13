@@ -2,10 +2,12 @@ package com.move.service.impl;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
+import com.move.dao.MsgHistoryDao;
 import com.move.dao.OrgDepartmentDao;
 import com.move.dao.OrgGroupDao;
 import com.move.dao.OrgRelationDao;
 import com.move.dao.UseDataDao;
+import com.move.model.MsgHistory;
 import com.move.model.OrgDepartment;
 import com.move.model.OrgGroup;
 import com.move.model.OrgRelation;
@@ -63,6 +65,9 @@ public class WxDataServiceImpl implements WxDataService {
 
 	@Autowired
 	private OrgRelationDao orgRelationDao;
+
+	@Autowired
+	private MsgHistoryDao msgHistoryDao;
 
 	@Override
 	public String getAccessToken() {
@@ -453,21 +458,45 @@ public class WxDataServiceImpl implements WxDataService {
 	}
 
 	@Override
-	public Object sendMsg(String content) {
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Object sendMsg(String content, UserInfo userInfo, String month) {
 		String access_token = Globals.ACCESS_TOKEN;
 		Date now = new Date();
 		if (null == access_token || Globals.EXPIRES_DATE < now.getTime()) {
 			access_token = this.getAccessToken();
 		}
+		String userids = "";
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addWhere(qb, "and t.account is null");
+		QueryUtils.addWhere(qb, "and not exists(select t1.id from IgnoreUsers t1 where t1.ignoreFlag='1' and t1.userid=t.userid)");
+		List<UserData> userDatas = useDataDao.find(qb);
+		List<MsgHistory> msgHistorys = Lists.newArrayList();
+
+		if (null != userDatas && userDatas.size() > 0) {
+			MsgHistory msgHistory = new MsgHistory();
+			for (UserData userData : userDatas) {
+				userids = userids + userData.getUserid() + "|";
+				msgHistory = new MsgHistory();
+				msgHistory.setContent(content);
+				msgHistory.setCreateDate(now);
+				msgHistory.setCreateName(userInfo.getName());
+				msgHistory.setMonth(month);
+				msgHistory.setState("1");
+				msgHistory.setUserid(userData.getUserid());
+				msgHistorys.add(msgHistory);
+			}
+		}
+
+		//
 		String postData = createPostData("13906748021", "text", Integer.parseInt(Globals.AGENT_ID), "content", content);
 		String response = null;
 		try {
 			response = post("utf-8", "application/json",
 					"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=", postData, access_token);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		msgHistoryDao.batchSave(msgHistorys);
 		return response;
 	}
 
