@@ -6,6 +6,9 @@ import com.move.utils.DictUtils;
 import com.move.utils.QueryBuilder;
 import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
+import com.move.utils.Utilities;
+
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +40,8 @@ public class DataAction {
 	}
 
 	@GetMapping(value = "dataDataGrid")
-	public Object dataDataGrid(UserInfo userInfo, Integer start, Integer length, String userid, String month,
-			Integer fileId, String inputSearch) {
+	public Object dataDataGrid(UserInfo userInfo, Integer start, Integer length, String userid, String startMonth,
+			Integer monthNub, Integer fileId, String inputSearch, String mobile, String userName) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.setStart(start);
 		qb.setLength(length);
@@ -55,17 +58,58 @@ public class DataAction {
 		QueryUtils.addColumn(qb, "t.value6", "improve");
 		QueryUtils.addColumn(qb, "t.total", "total");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		QueryUtils.addWhereIfNotNull(qb, "and t.userid = {0}", userid);
+		if (StringUtils.isNotBlank(userid)) {
+			QueryUtils.addWhere(qb, "and t.userid like {0}", "%" + userid + "%");
+		}
+
+		if (StringUtils.isNotBlank(userName)) {
+			QueryUtils.addWhere(qb, "and t.name like {0}", "%" + userName + "%");
+		}
+		if (StringUtils.isNotBlank(mobile)) {
+			QueryUtils.addWhere(qb, "and t.mobile like {0}", "%" + mobile + "%");
+		}
 		QueryUtils.addWhereIfNotNull(qb, "and t.fileId = {0}", fileId);
-		if (StringUtils.isNotBlank(month)) {
-			QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
+		if (StringUtils.isNotBlank(startMonth)) {
+			List<String> months = Utilities.setMonthList(startMonth, monthNub);
+			QueryUtils.addWhere(qb, "and t.month in {0}", months);
 		}
 		if (StringUtils.isNotBlank(inputSearch)) {
-			QueryUtils.addWhereIfNotNull(qb, "and t.name like {0}", "%" + inputSearch + "%");
+			QueryUtils.addWhere(qb, "and t.name like {0}", "%" + inputSearch + "%");
 		}
-		QueryUtils.addJoin(qb, "left join UserData u on u.mobile = t.mobile");
 		QueryUtils.addOrder(qb, "t.month desc");
 		return dataService.DataGrid(qb);
+	}
+
+	@GetMapping(value = "dataResultGrid")
+	public Object dataResultGrid(UserInfo userInfo, Integer start, Integer length, String startMonth, Integer monthNub,
+			String relationType) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.setStart(start);
+		qb.setLength(length);
+		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb, "t.month", "month");
+		QueryUtils.addColumn(qb, "t.value1", "study");
+		QueryUtils.addColumn(qb, "t.value2", "read");
+		QueryUtils.addColumn(qb, "t.value3", "culture");
+		QueryUtils.addColumn(qb, "t.value4", "attendance");
+		QueryUtils.addColumn(qb, "t.value5", "hse");
+		QueryUtils.addColumn(qb, "t.value6", "improve");
+		QueryUtils.addColumn(qb, "t.total", "total");
+		QueryUtils.addColumn(qb, "t.personNub", "personNub");
+		QueryUtils.addWhere(qb, "and t.personNub > 0");
+		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+		QueryUtils.addColumn(qb, "t.month", "month");
+		QueryUtils.addColumn(qb, "t.createDate", "createDate");
+		if (StringUtils.isNotBlank(relationType)) {
+			QueryUtils.addWhere(qb, "and t.relationType = {0}", relationType);
+		}
+
+		QueryUtils.addOrder(qb, "t.month desc");
+		if (StringUtils.isNotBlank(startMonth)) {
+			List<String> months = Utilities.setMonthList(startMonth, monthNub);
+			QueryUtils.addWhere(qb, "and t.month in {0}", months);
+		}
+		return dataService.DataResultGrid(qb);
 	}
 
 	@GetMapping(value = "fileDatagrid")
@@ -88,8 +132,8 @@ public class DataAction {
 	}
 
 	@GetMapping(value = "msgHistoryDatagrid")
-	public Object msgHistoryDatagrid(UserInfo userInfo, Integer start, Integer length, String month,
-			String inputSearch) {
+	public Object msgHistoryDatagrid(UserInfo userInfo, Integer start, Integer length, String inputSearch,
+			String mobile, String username, String userid, String startMonth, Integer monthNub) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.setStart(start);
 		qb.setLength(length);
@@ -103,20 +147,28 @@ public class DataAction {
 		QueryUtils.addColumn(qb, "t.content", "content");
 		QueryUtils.addColumn(qb, "'已发送'", "state");
 		QueryUtils.addColumn(qb, "t.createDate", "createDate");
-		if (StringUtils.isNotBlank(month)) {
-			QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
+		if (StringUtils.isNotBlank(startMonth)) {
+			List<String> months = Utilities.setMonthList(startMonth, monthNub);
+			QueryUtils.addWhereIfNotNull(qb, "and t.month in {0}", months);
 		}
-		if (StringUtils.isNotBlank(inputSearch)) {
-			QueryUtils.addWhereIfNotNull(qb, "and (u.name like {0} or t.content like {0})", "%" + inputSearch + "%");
+		if (StringUtils.isNotBlank(mobile)) {
+			QueryUtils.addWhereIfNotNull(qb, "and u.mobile like {0} ", "%" + mobile + "%");
+		}
+		if (StringUtils.isNotBlank(username)) {
+			QueryUtils.addWhereIfNotNull(qb, "and u.name like {0}", "%" + username + "%");
+		}
+		if (StringUtils.isNotBlank(userid)) {
+			QueryUtils.addWhereIfNotNull(qb, "and u.userid like {0}", "%" + userid + "%");
 		}
 		QueryUtils.addJoin(qb, "left join UserData u on u.userid = t.userid");
+		QueryUtils.addWhere(qb, "and u.id is not null");
 		QueryUtils.addOrder(qb, "t.id desc");
 		return dataService.msgHistoryDatagrid(qb);
 	}
 
 	@GetMapping(value = "originalUpdate")
-	public Object originalUpdate(Integer id, Integer value1, Integer value2, Integer value3, Integer value4, Integer value5,
-			Integer value6, UserInfo userInfo) {
+	public Object originalUpdate(Integer id, Integer value1, Integer value2, Integer value3, Integer value4,
+			Integer value5, Integer value6, UserInfo userInfo) {
 		return dataService.originalUpdate(id, value1, value2, value3, value4, value5, value6, userInfo);
 	}
 }

@@ -46,7 +46,6 @@ public class RefreshInfoAction {
 	// 更新班组
 	@GetMapping(value = "refreshTag")
 	public Object refreshTag(UserInfo userInfo) {
-		
 
 		return wxDataService.refreshTag(userInfo);
 	}

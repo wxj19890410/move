@@ -30,17 +30,18 @@ public class DataResult extends BaseModel implements Serializable {
 
 	private String month;
 
+	private String userid;
+
 	@Column(name = "relation_id")
 	private Integer relationId;
-	
+
 	@Column(name = "relation_type")
 	private String relationType;
-	
+
 	@Column(name = "person_nub")
 	private Integer personNub;
 
 	private Integer total;
-
 
 	public Integer getRelationId() {
 		return relationId;
@@ -66,7 +67,6 @@ public class DataResult extends BaseModel implements Serializable {
 		this.personNub = personNub;
 	}
 
-
 	public Integer getTotal() {
 		return total;
 	}
@@ -82,7 +82,6 @@ public class DataResult extends BaseModel implements Serializable {
 	public void setFileId(Integer fileId) {
 		this.fileId = fileId;
 	}
-
 
 	public Integer getValue1() {
 		return value1;
@@ -138,5 +137,13 @@ public class DataResult extends BaseModel implements Serializable {
 
 	public void setMonth(String month) {
 		this.month = month;
+	}
+
+	public String getUserid() {
+		return userid;
+	}
+
+	public void setUserid(String userid) {
+		this.userid = userid;
 	}
 }

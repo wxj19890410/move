@@ -56,7 +56,8 @@ public class UserAction {
 
 	@GetMapping(value = "userDataGrid")
 	public Object userDataGrid(UserInfo userInfo, Integer start, Integer length, String haveGroup, String haveDept,
-			String inputSearch,String month,String avg) {
+			String inputSearch, String month, String avg, String mobile, String username, String userid,
+			String startMonth, Integer monthNub, Integer deptId, String deptType) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.setStart(start);
 		qb.setLength(length);
@@ -68,17 +69,76 @@ public class UserAction {
 		QueryUtils.addColumn(qb, "t.mobile", "mobile");
 		QueryUtils.addColumn(qb, "t.email", "email");
 		QueryUtils.addColumn(qb, "t.avatar", "avatar");
+		QueryUtils.addColumn(qb, "t.tagNames", "tagNames");
+		QueryUtils.addColumn(qb,
+				"(case when exists(from DeptRelation t1 where t1.deptId = t.deptId and t1.deptType ='02') then '非生产部门' else  '生产部门' end )",
+				"deptType");
+
+		QueryUtils.addColumn(qb, "(select t1.name from OrgDepartment t1 where t1.id = t.deptId)", "deptName");
 		QueryUtils.addWhere(qb, "and t.account is null");
 		QueryUtils.addJoin(qb, "left join IgnoreUsers u on u.userid = t.userid");
+		if (StringUtils.isNotBlank(mobile)) {
+			QueryUtils.addWhere(qb, "and t.mobile like {0}", "%" + mobile + "%");
+		}
+		if (StringUtils.isNotBlank(username)) {
+			QueryUtils.addWhere(qb, "and t.name like {0}", "%" + username + "%");
+		}
+		if (StringUtils.isNotBlank(userid)) {
+			QueryUtils.addWhere(qb, "and t.userid like {0}", "%" + userid + "%");
+		}
+		if (StringUtils.isNotBlank(deptType)) {
+			if (StringUtils.equals(deptType, "01")) {
+				QueryUtils.addWhere(qb,
+						"and not exists(from DeptRelation t1 where t1.deptId = t.deptId and t1.deptType ='02')");
+			} else {
+				QueryUtils.addWhere(qb,
+						"and exists(from DeptRelation t1 where t1.deptId = t.deptId and t1.deptType ='02')");
+			}
+		}
+		if (Utilities.isValidId(deptId)) {
+			QueryUtils.addWhere(qb, "and t.deptId = {0}", deptId);
+		}
 		if (StringUtils.isNotBlank(inputSearch)) {
 			QueryUtils.addWhere(qb, "and (t.name like {0}", "%" + inputSearch + "%");
 			QueryUtils.addWhere(qb, "or t.position like {0})", "%" + inputSearch + "%");
 		}
 		if (StringUtils.equals(avg, "1")) {
-			//组织
-			
-			//数据
-			if (StringUtils.isNotBlank(month)) {
+			// 非禁止的
+			QueryUtils.addWhere(qb, "and (u.ignoreFlag is null or u.ignoreFlag = '0')");
+			// 组织
+
+			// 数据
+			if (StringUtils.isNotBlank(startMonth)) {
+				List<String> months = Utilities.setMonthList(startMonth, monthNub);
+
+				QueryUtils.addColumn(qb,
+						"(select count(t2.id)+1 from UserData t2 where (select sum(t1.total) from DataOriginal t1 where t1.month in {0} and t1.userid = t2.userid) > (select sum(t1.total) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid) )",
+						"rank", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value1)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"study", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value2)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"read", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value3)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"culture", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value4)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"attendance", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value5)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"hse", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value6)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"improve", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.total)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"total", months);
+			} else {
+				QueryUtils.addColumn(qb,
+						"(select count(t1.id)+1 from DataResult t1 where t1.total>d.total and t1.relationType = d.relationType and t1.delFlag='0')",
+						"rank");
 				QueryUtils.addColumn(qb, "d.value1", "study");
 				QueryUtils.addColumn(qb, "d.value2", "read");
 				QueryUtils.addColumn(qb, "d.value3", "culture");
@@ -86,31 +146,7 @@ public class UserAction {
 				QueryUtils.addColumn(qb, "d.value5", "hse");
 				QueryUtils.addColumn(qb, "d.value6", "improve");
 				QueryUtils.addColumn(qb, "d.total", "total");
-				QueryUtils.addJoin(qb, "left join DataOriginal d on d.userid = t.userid ");
-				QueryUtils.addWhere(qb, "and d.month = {0}", month);
-			} else {
-
-				QueryUtils.addColumn(qb,
-						"(select avg(t1.value1) from DataOriginal t1 where t1.userid = t.userid and t1.delFlag = '0')",
-						"study");
-				QueryUtils.addColumn(qb,
-						"(select avg(t1.value2) from DataOriginal t1 where t1.userid = t.userid  and t1.delFlag = '0')",
-						"read");
-				QueryUtils.addColumn(qb,
-						"(select avg(t1.value3) from DataOriginal t1 where t1.userid = t.userid  and t1.delFlag = '0')",
-						"culture");
-				QueryUtils.addColumn(qb,
-						"(select avg(t1.value4) from DataOriginal t1 where t1.userid = t.userid  and t1.delFlag = '0')",
-						"attendance");
-				QueryUtils.addColumn(qb,
-						"(select avg(t1.value5) from DataOriginal t1 where t1.userid = t.userid and t1.delFlag = '0')",
-						"hse");
-				QueryUtils.addColumn(qb,
-						"(select avg(t1.value6) from DataOriginal t1 where t1.userid = t.userid and t1.delFlag = '0')",
-						"improve");
-				QueryUtils.addColumn(qb,
-						"(select avg(t1.total) from DataOriginal t1 where t1.userid = t.userid  and t1.delFlag = '0')",
-						"total");
+				QueryUtils.addJoin(qb, "left join DataResult d on d.userid = t.userid ");
 			}
 		}
 		return userService.userDataGrid(qb);

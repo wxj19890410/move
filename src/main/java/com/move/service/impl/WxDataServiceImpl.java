@@ -192,6 +192,8 @@ public class WxDataServiceImpl implements WxDataService {
 				if (null != lists && lists.size() >= 0) {
 					OrgRelation orgRelation = new OrgRelation();
 					for (UserData userData : lists) {
+						userData.setDeptId(orgDepartment.getId());
+
 						orgRelation = new OrgRelation();
 						orgRelation.setRelationId(orgDepartment.getId());
 						orgRelation.setRelationType("dept");
@@ -265,7 +267,15 @@ public class WxDataServiceImpl implements WxDataService {
 			orgGroupDao.batchSave(orgGroups);
 			// 保存关系
 			List<OrgRelation> orgRelations = Lists.newArrayList();
+			int t = 0;
+
+			qb = new QueryBuilder();
+			QueryUtils.addSetColumn(qb, "t.tagNames", "");
+			QueryUtils.addWhere(qb, " and 1=1");
+			useDataDao.update(qb);
+
 			for (OrgGroup orgGroup : orgGroups) {
+				t++;
 				data = "https://qyapi.weixin.qq.com/cgi-bin/tag/get?access_token=" + access_token + "&tagid="
 						+ orgGroup.getTagid();
 				wxUtilModel = new WxUtilModel();
@@ -294,18 +304,31 @@ public class WxDataServiceImpl implements WxDataService {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				List<String> userids = Lists.newArrayList();
+
 				List<UserData> lists = Lists.newArrayList();
 				lists = wxUtilModel.getUserlist();
 				if (null != lists && lists.size() > 0) {
 					OrgRelation orgRelation = new OrgRelation();
 					for (UserData userData : lists) {
+						userids.add(userData.getUserid());
 						orgRelation = new OrgRelation();
 						orgRelation.setRelationId(orgGroup.getTagid());
 						orgRelation.setRelationType("tag");
 						orgRelation.setUserid(userData.getUserid());
 						orgRelations.add(orgRelation);
+
 					}
 				}
+				qb = new QueryBuilder();
+				if (Utilities.equals(t, 1)) {
+					QueryUtils.addSetColumn(qb, "t.tagNames", orgGroup.getTagname());
+				} else {
+					QueryUtils.addSetColumn1(qb, "t.tagNames=concat(t.tagNames,',',{0})", orgGroup.getTagname());
+				}
+				QueryUtils.addWhere(qb, " and t.userid in {0}", userids);
+				useDataDao.update(qb);
+
 			}
 
 			if (null != orgRelations && orgRelations.size() > 0) {
@@ -316,6 +339,7 @@ public class WxDataServiceImpl implements WxDataService {
 				// 创建关系
 				orgRelationDao.batchSave(orgRelations);
 			}
+
 		}
 
 		return orgGroups.size();
@@ -468,7 +492,8 @@ public class WxDataServiceImpl implements WxDataService {
 		String userids = "";
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addWhere(qb, "and t.account is null");
-		QueryUtils.addWhere(qb, "and not exists(select t1.id from IgnoreUsers t1 where t1.ignoreFlag='1' and t1.userid=t.userid)");
+		QueryUtils.addWhere(qb,
+				"and not exists(select t1.id from IgnoreUsers t1 where t1.ignoreFlag='1' and t1.userid=t.userid)");
 		List<UserData> userDatas = useDataDao.find(qb);
 		List<MsgHistory> msgHistorys = Lists.newArrayList();
 

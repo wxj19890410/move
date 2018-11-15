@@ -1,9 +1,11 @@
 package com.move.service.impl;
 
 import com.move.dao.DeptRelationDao;
+import com.move.dao.IgnoreGroupsDao;
 import com.move.dao.OrgDepartmentDao;
 import com.move.dao.OrgGroupDao;
 import com.move.model.DeptRelation;
+import com.move.model.IgnoreGroups;
 import com.move.model.IgnoreUsers;
 import com.move.model.OrgDepartment;
 import com.move.model.OrgGroup;
@@ -30,10 +32,12 @@ public class OrgServiceImpl implements OrgService {
 
 	@Autowired
 	private OrgGroupDao orgGroupDao;
-	
 
 	@Autowired
 	private DeptRelationDao deptRelationDao;
+
+	@Autowired
+	private IgnoreGroupsDao ignoreGroupsDao;
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -59,7 +63,7 @@ public class OrgServiceImpl implements OrgService {
 		if (Utilities.isValidId(id)) {
 			group = orgGroupDao.get(id);
 		}
-		//group.setName(name);
+		// group.setName(name);
 		if (Utilities.isValidId(id)) {
 			orgGroupDao.update(group);
 		} else {
@@ -129,6 +133,22 @@ public class OrgServiceImpl implements OrgService {
 		deptRelation.setDeptType(deptType);
 		deptRelation.setDeptId(id);
 		return deptRelationDao.save(deptRelation);
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public IgnoreGroups setGroupFlag(Integer tagid, String ignoreFlag, UserInfo userInfo) {
+		System.out.println(ignoreFlag);
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addWhere(qb, "and t.tagid = {0}", tagid);
+		ignoreGroupsDao.delete(qb);
+		Date now = new Date();
+		IgnoreGroups ignoreGroups = new IgnoreGroups();
+		ignoreGroups.setCreateDate(now);
+		ignoreGroups.setEditDate(now);
+		ignoreGroups.setIgnoreFlag(ignoreFlag);
+		ignoreGroups.setTagid(tagid);
+		return ignoreGroupsDao.save(ignoreGroups);
 	}
 
 }

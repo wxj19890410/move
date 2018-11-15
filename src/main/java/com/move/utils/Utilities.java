@@ -1,5 +1,6 @@
 package com.move.utils;
 
+import com.fasterxml.jackson.databind.deser.impl.CreatorCandidate.Param;
 import com.google.common.collect.Lists;
 import com.move.model.BaseModel;
 import org.apache.commons.lang.StringUtils;
@@ -152,6 +153,28 @@ public class Utilities {
 	 */
 	public static Integer ifNull(Integer n) {
 		return n != null ? n : 0;
+	}
+
+	public static List<String> setMonthList(String startMonth, Integer monthNub) {
+		List<String> date = Lists.newArrayList();
+		date.add(startMonth);
+		if (null != monthNub && monthNub > 0) {
+			List<String> data = split(startMonth, "-");
+			if (data.size() > 1) {
+				Integer year = Integer.parseInt(data.get(0));
+				Integer month = Integer.parseInt(data.get(1));
+				for (int t = 0; t < monthNub; t++) {
+					if (equals(month, 12)) {
+						month = 1;
+						year = year + 1;
+					} else {
+						month = month + 1;
+					}
+					date.add(year + "-" + month);
+				}
+			}
+		}
+		return date;
 	}
 
 }

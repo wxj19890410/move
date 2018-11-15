@@ -8,49 +8,70 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name="sys_file")
-@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler"})
+@Table(name = "sys_file")
+@JsonIgnoreProperties(value = { "hibernateLazyInitializer", "handler" })
 public class SysFile extends BaseModel implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    private  String path;
+	private String path;
 
-    private  String ext;
+	private String ext;
 
-    private  String name;
+	private String name;
 
-    private  String month;
+	private String month;
 
-    public String getPath() {
-        return path;
-    }
+	@Column(name = "relation_type")
+	private String relationType;
 
-    public void setPath(String path) {
-        this.path = path;
-    }
+	private String type;
 
-    public String getExt() {
-        return ext;
-    }
+	public String getRelationType() {
+		return relationType;
+	}
 
-    public void setExt(String ext) {
-        this.ext = ext;
-    }
+	public void setRelationType(String relationType) {
+		this.relationType = relationType;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getType() {
+		return type;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setType(String type) {
+		this.type = type;
+	}
 
-    public String getMonth() {
-        return month;
-    }
+	public String getPath() {
+		return path;
+	}
 
-    public void setMonth(String month) {
-        this.month = month;
-    }
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	public String getExt() {
+		return ext;
+	}
+
+	public void setExt(String ext) {
+		this.ext = ext;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getMonth() {
+		return month;
+	}
+
+	public void setMonth(String month) {
+		this.month = month;
+	}
 }

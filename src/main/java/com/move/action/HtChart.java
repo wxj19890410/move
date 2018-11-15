@@ -19,6 +19,7 @@ import com.move.utils.DictUtils;
 import com.move.utils.QueryBuilder;
 import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
+import com.move.utils.Utilities;
 
 @CrossOrigin
 @RestController
@@ -39,39 +40,66 @@ public class HtChart {
 		QueryUtils.addWhere(qb, "and t.relationType = 'company'");
 		QueryUtils.addWhere(qb, "and t.month = {0}", month);
 		DataResult dataResult = dataService.getDataResult(qb);
-		if (null != dataResult) {
-			chart1.add(dataResult.getValue2());
-			chart1.add(dataResult.getValue2());
-			chart1.add(dataResult.getValue3());
-			chart1.add(dataResult.getValue4());
-			chart1.add(dataResult.getValue5());
-			chart1.add(dataResult.getValue6());
+		if (null == dataResult) {
+			dataResult = new DataResult();
+			dataResult.setValue1(0);
+			dataResult.setValue2(0);
+			dataResult.setValue3(0);
+			dataResult.setValue4(0);
+			dataResult.setValue5(0);
+			dataResult.setValue6(0);
+		} else {
 
-			Map<String, Object> chart2Map = new HashMap<>();
-			chart2Map.put("value", dataResult.getValue2());
-			chart2Map.put("name", DictUtils.DATA_VALUE1);
-			chart2.add(chart2Map);
-			chart2Map = new HashMap<>();
-			chart2Map.put("value", dataResult.getValue2());
-			chart2Map.put("name", DictUtils.DATA_VALUE2);
-			chart2.add(chart2Map);
-			chart2Map = new HashMap<>();
-			chart2Map.put("value", dataResult.getValue3());
-			chart2Map.put("name", DictUtils.DATA_VALUE3);
-			chart2.add(chart2Map);
-			chart2Map = new HashMap<>();
-			chart2Map.put("value", dataResult.getValue4());
-			chart2Map.put("name", DictUtils.DATA_VALUE4);
-			chart2.add(chart2Map);
-			chart2Map = new HashMap<>();
-			chart2Map.put("value", dataResult.getValue5());
-			chart2Map.put("name", DictUtils.DATA_VALUE5);
-			chart2.add(chart2Map);
-			chart2Map = new HashMap<>();
-			chart2Map.put("value", dataResult.getValue6());
-			chart2Map.put("name", DictUtils.DATA_VALUE6);
-			chart2.add(chart2Map);
+			if (!Utilities.isValidId(dataResult.getValue1())) {
+				dataResult.setValue1(0);
+			}
+			if (!Utilities.isValidId(dataResult.getValue2())) {
+				dataResult.setValue2(0);
+			}
+			if (!Utilities.isValidId(dataResult.getValue3())) {
+				dataResult.setValue3(0);
+			}
+			if (!Utilities.isValidId(dataResult.getValue4())) {
+				dataResult.setValue4(0);
+			}
+			if (!Utilities.isValidId(dataResult.getValue5())) {
+				dataResult.setValue5(0);
+			}
+			if (!Utilities.isValidId(dataResult.getValue6())) {
+				dataResult.setValue6(0);
+			}
 		}
+		chart1.add(dataResult.getValue1());
+		chart1.add(dataResult.getValue2());
+		chart1.add(dataResult.getValue3());
+		chart1.add(dataResult.getValue4());
+		chart1.add(dataResult.getValue5());
+		chart1.add(dataResult.getValue6());
+
+		Map<String, Object> chart2Map = new HashMap<>();
+		chart2Map.put("value", dataResult.getValue1());
+		chart2Map.put("name", DictUtils.DATA_VALUE1);
+		chart2.add(chart2Map);
+		chart2Map = new HashMap<>();
+		chart2Map.put("value", dataResult.getValue2());
+		chart2Map.put("name", DictUtils.DATA_VALUE2);
+		chart2.add(chart2Map);
+		chart2Map = new HashMap<>();
+		chart2Map.put("value", dataResult.getValue3());
+		chart2Map.put("name", DictUtils.DATA_VALUE3);
+		chart2.add(chart2Map);
+		chart2Map = new HashMap<>();
+		chart2Map.put("value", dataResult.getValue4());
+		chart2Map.put("name", DictUtils.DATA_VALUE4);
+		chart2.add(chart2Map);
+		chart2Map = new HashMap<>();
+		chart2Map.put("value", dataResult.getValue5());
+		chart2Map.put("name", DictUtils.DATA_VALUE5);
+		chart2.add(chart2Map);
+		chart2Map = new HashMap<>();
+		chart2Map.put("value", dataResult.getValue6());
+		chart2Map.put("name", DictUtils.DATA_VALUE6);
+		chart2.add(chart2Map);
 		data.put("chart1", chart1);
 		data.put("chart2", chart2);
 		return data;

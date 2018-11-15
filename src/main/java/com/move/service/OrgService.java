@@ -1,6 +1,7 @@
 package com.move.service;
 
 import com.move.model.DeptRelation;
+import com.move.model.IgnoreGroups;
 import com.move.model.OrgDepartment;
 import com.move.model.OrgGroup;
 import com.move.model.UserData;
@@ -41,4 +42,7 @@ public interface OrgService {
 
 
 	public DeptRelation setDeptType(Integer id, String deptType, UserInfo userInfo);
+
+
+	public IgnoreGroups setGroupFlag(Integer tagid, String ignoreFlag, UserInfo userInfo);
 }

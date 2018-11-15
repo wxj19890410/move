@@ -11,34 +11,57 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name="user_data")
-@JsonIgnoreProperties(value={"hibernateLazyInitializer","handler"})
+@Table(name = "user_data")
+@JsonIgnoreProperties(value = { "hibernateLazyInitializer", "handler" })
 public class UserData implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private  Integer id;
-    private  String userid;
-    
-    private  String name;
-    
-    private  String position;
-    
-    private  String mobile;
+	private static final long serialVersionUID = 1L;
 
-    private  String email;
-    
-    private  String avatar;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
+	private String userid;
 
-    private  String telephone;
+	private String name;
+
+	private String position;
+
+	private String mobile;
+
+	private String email;
+
+	private String avatar;
+
+	private String telephone;
+
+	@Column(name = "pass_word")
+	private String passWord;
+
+	private String account;
+
+	@Column(name = "dept_id")
+	private Integer deptId;
+	
+	@Column(name = "tag_names")
+	private String tagNames;
+	
 
 
-    @Column(name = "pass_word")
-    private  String passWord;
+	public String getTagNames() {
+		return tagNames;
+	}
 
-    private  String account;
+	public void setTagNames(String tagNames) {
+		this.tagNames = tagNames;
+	}
+
+	public Integer getDeptId() {
+		return deptId;
+	}
+
+	public void setDeptId(Integer deptId) {
+		this.deptId = deptId;
+	}
 
 	public Integer getId() {
 		return id;
@@ -119,8 +142,5 @@ public class UserData implements Serializable {
 	public void setAccount(String account) {
 		this.account = account;
 	}
-    
-    
-
 
 }

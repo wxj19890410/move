@@ -2,17 +2,28 @@ package com.move.service.impl;
 
 import ch.qos.logback.core.net.SyslogOutputStream;
 
+import com.google.common.collect.Lists;
 import com.move.dao.DataOriginalDao;
 import com.move.dao.SysFileDao;
+import com.move.dao.UseDataDao;
+import com.move.dao.impl.UserDataDaoImpl;
 import com.move.model.DataOriginal;
 import com.move.model.SysFile;
+import com.move.model.UserData;
 import com.move.service.FileService;
+import com.move.utils.DataBaseUtil;
+import com.move.utils.Datagrid;
 import com.move.utils.QueryBuilder;
 import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
 import com.move.utils.Utilities;
+import com.move.utils.ZipUtils;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -26,11 +37,18 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.sql.CallableStatement;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Service
 public class FileServiceImpl implements FileService {
@@ -39,6 +57,9 @@ public class FileServiceImpl implements FileService {
 
 	@Autowired
 	private DataOriginalDao dataOriginalDao;
+
+	@Autowired
+	private UseDataDao useDataDao;
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -49,18 +70,23 @@ public class FileServiceImpl implements FileService {
 			QueryUtils.addWhere(qb, " and month={0}", month);
 			sysFileDao.delete(qb);
 		}
-		SysFile sysFile = new SysFile();
-		sysFile.setName(name);
-		sysFile.setExt(ext);
-		sysFile.setPath(path);
-		sysFile.setMonth(month);
-		Utilities.setUserInfo(sysFile, userInfo);
-		sysFileDao.save(sysFile);
+		SysFile sysFile = this.saveSysFile(name, ext, path, month, "file", userInfo);
 		try {
 			readExcel(path, name, sysFile.getId(), sysFile.getMonth(), userInfo);
 		} catch (Exception e) {
 		}
 		return sysFile;
+	}
+
+	private SysFile saveSysFile(String name, String ext, String path, String month, String relationType, UserInfo userInfo) {
+		SysFile sysFile = new SysFile();
+		sysFile.setName(name);
+		sysFile.setExt(ext);
+		sysFile.setPath(path);
+		sysFile.setMonth(month);
+		sysFile.setRelationType(relationType);
+		Utilities.setUserInfo(sysFile, userInfo);
+		return sysFileDao.save(sysFile);
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)
@@ -151,4 +177,108 @@ public class FileServiceImpl implements FileService {
 		String reg = "^[0-9]+(.[0-9]+)?$";
 		return data != null && !"".equals(data.toString().trim()) && data.toString().matches(reg);
 	}
+
+	@Override
+	public void createExcel(String path) {
+		// 定义表头
+		String[] title = { "序号", "姓名", "手机号", "学习指数", "读书指数", "企业文化", "出勤指数", "HSE", "精益指数" };
+		// 创建excel工作簿
+		HSSFWorkbook workbook = new HSSFWorkbook();
+		// 创建工作表sheet
+		HSSFSheet sheet = workbook.createSheet();
+		// 创建第一行
+		HSSFRow row = sheet.createRow(0);
+		HSSFCell cell = null;
+		// 插入第一行数据的表头
+		for (int i = 0; i < title.length; i++) {
+			cell = row.createCell(i);
+			cell.setCellValue(title[i]);
+		}
+		// 获取人员数据
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addWhere(qb, "and t.account is null");
+		List<UserData> users = useDataDao.find(qb);
+		if (null != users && users.size() > 0) {
+			// 写入数据
+			for (int i = 0; i < users.size(); i++) {
+				UserData user = users.get(i);
+				HSSFRow nrow = sheet.createRow(i + 1);
+				HSSFCell ncell = nrow.createCell(0);
+				ncell.setCellValue("" + i + 1);
+				ncell = nrow.createCell(1);
+				ncell.setCellValue(user.getName());
+				ncell = nrow.createCell(2);
+				ncell.setCellValue(user.getMobile());
+			}
+
+		}
+		/*
+		 * // 写入数据 for (int i = 1; i <= 10; i++) { HSSFRow nrow =
+		 * sheet.createRow(i); HSSFCell ncell = nrow.createCell(0);
+		 * ncell.setCellValue("" + i); ncell = nrow.createCell(1);
+		 * ncell.setCellValue("user" + i); ncell = nrow.createCell(2);
+		 * ncell.setCellValue("24"); }
+		 */
+		// 创建excel文件
+		File file = new File(path);
+		try {
+			file.createNewFile();
+			// 将excel写入
+			FileOutputStream stream = FileUtils.openOutputStream(file);
+			workbook.write(stream);
+			stream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public SysFile dataZip(UserInfo userInfo) {
+		// 查询所有附件
+		String rootPath = "C:/huoli/huoliJava";
+
+		String zipPath = "/files/" + UUID.randomUUID().toString() + ".zip";
+
+		List<String> fileNames = Lists.newArrayList();
+
+		String name = UUID.randomUUID().toString(); // 数据库名
+		String bakPath = "/files/" + name + ".bak";// name文件名
+		try {
+			String realPath = rootPath + bakPath;// name文件名
+			String bakSQL = "backup database huoli to disk=? with init";// SQL语句
+			PreparedStatement bak = DataBaseUtil.getConnection().prepareStatement(bakSQL);
+			bak.setString(1, realPath);// path必须是绝对路径
+			bak.execute(); // 备份数据库
+			bak.close();
+			fileNames.add(realPath);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addWhere(qb, "and t.delFlag = '0'");
+		QueryUtils.addWhere(qb, "and t.relationType = 'xlsx'");
+		List<SysFile> sysFiles = sysFileDao.find(qb);
+		if (null != sysFiles && sysFiles.size() > 0) {
+			for (SysFile sysFile : sysFiles) {
+				fileNames.add(rootPath + sysFile.getPath());
+			}
+		}
+		try {
+			ZipUtils.zip(fileNames, Utilities.getFilePath(rootPath + zipPath));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		Date now = new Date();
+		String zipName = "备份数据" + Utilities.formatDate(now, "YYYY-MM");
+		return this.saveSysFile(zipName, "zip", zipPath, null, "zip", userInfo);
+	}
+
+	@Override
+	public Datagrid fileDatagrid(QueryBuilder qb) {
+		return sysFileDao.datagrid(qb);
+	}
+
 }

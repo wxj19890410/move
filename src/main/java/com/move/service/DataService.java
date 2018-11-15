@@ -21,4 +21,5 @@ public interface DataService  {
 	public Datagrid msgHistoryDatagrid(QueryBuilder qb);
 	public DataOriginal originalUpdate(Integer id, Integer value1, Integer value2, Integer value3, Integer value4, Integer value5,
 			Integer value6, UserInfo userInfo);
+	public Datagrid DataResultGrid(QueryBuilder qb);
 }

@@ -7,6 +7,9 @@ import com.move.utils.DictUtils;
 import com.move.utils.QueryBuilder;
 import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
+import com.move.utils.Utilities;
+
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,11 +66,18 @@ public class OrgAction {
 	}
 
 	@GetMapping(value = "findGroupMap")
-	public Object findGroupMap(UserInfo userInfo) {
+	public Object findGroupMap(UserInfo userInfo, String havaIgnore) {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addColumn(qb, "t.id");
 		QueryUtils.addColumn(qb, "t.tagid", "tagid");
 		QueryUtils.addColumn(qb, "t.tagname", "name");
+		if (StringUtils.equals(havaIgnore, DictUtils.YES)) {
+
+		} else {
+			QueryUtils.addWhere(qb,
+					" and not exists(from IgnoreGroups u where u.tagid = t.tagid and u.ignoreFlag = '1')");
+		}
+
 		return orgService.findGroupMap(qb);
 	}
 
@@ -75,39 +85,60 @@ public class OrgAction {
 	public Object findDeptMap(UserInfo userInfo, String deptType) {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addColumn(qb, "t.id");
-		QueryUtils.addColumn(qb, "t.deptType");
 		QueryUtils.addColumn(qb, "t.name", "name");
-		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		QueryUtils.addWhereIfNotNull(qb, "and t.deptType = {0}", deptType);
+		if (StringUtils.isNotBlank(deptType)) {
+			if (StringUtils.equals(deptType, "01")) {
+				QueryUtils.addWhere(qb,
+						"and not exists(from DeptRelation t1 where t1.deptId = t.id and t1.deptType ='02')");
+			} else {
+				QueryUtils.addWhere(qb,
+						"and exists(from DeptRelation t1 where t1.deptId = t.id and t1.deptType ='02')");
+			}
+		}
 		return orgService.findDeptMap(qb);
 	}
 
 	@GetMapping(value = "groupDataGrid")
 	public Object groupDataGrid(UserInfo userInfo, Integer start, Integer length, String avg, String month,
-			String inputSearch) {
+			String inputSearch, Integer tagid, String startMonth, Integer monthNub) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.setStart(start);
 		qb.setLength(length);
 		QueryUtils.addColumn(qb, "t.id");
 		QueryUtils.addColumn(qb, "t.tagid");
 		QueryUtils.addColumn(qb, "t.tagname", "name");
+		QueryUtils.addColumn(qb, "u.ignoreFlag", "ignoreFlag");
 		QueryUtils.addColumn(qb,
 				"(select count(t1.id) from OrgRelation t1 where t1.relationId = t.tagid and t1.relationType = 'tag')",
 				"number");
 		if (StringUtils.equals(avg, "0")) {
 
 		} else {
-			if (StringUtils.isNotBlank(month)) {
-				QueryUtils.addColumn(qb, "d.value1", "study");
-				QueryUtils.addColumn(qb, "d.value2", "read");
-				QueryUtils.addColumn(qb, "d.value3", "culture");
-				QueryUtils.addColumn(qb, "d.value4", "attendance");
-				QueryUtils.addColumn(qb, "d.value5", "hse");
-				QueryUtils.addColumn(qb, "d.value6", "improve");
-				QueryUtils.addColumn(qb, "d.total", "total");
-				QueryUtils.addColumn(qb, "d.personNub", "personNub");
-				QueryUtils.addJoin(qb, "left join DataResult d on d.relationId = t.tagid and d.relationType = 'tag'");
-				QueryUtils.addWhere(qb, "and d.month = {0}", month);
+			QueryUtils.addWhere(qb,
+					" and not exists(from IgnoreGroups u where u.tagid = t.tagid and u.ignoreFlag = '1')");
+			if (StringUtils.isNotBlank(startMonth)) {
+				List<String> months = Utilities.setMonthList(startMonth, monthNub);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value1)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'tag' and relationId = t.tagid)",
+						"study", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value2)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'tag' and relationId = t.tagid)",
+						"read", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value3)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'tag' and relationId = t.tagid)",
+						"culture", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value4)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'tag' and relationId = t.tagid)",
+						"attendance", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value5)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'tag' and relationId = t.tagid)",
+						"hse", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value6)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'tag' and relationId = t.tagid)",
+						"improve", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.total)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'tag' and relationId = t.tagid)",
+						"total", months);
 			} else {
 
 				QueryUtils.addColumn(qb,
@@ -139,12 +170,17 @@ public class OrgAction {
 		if (StringUtils.isNotBlank(inputSearch)) {
 			QueryUtils.addWhere(qb, " and  t.tagname like {0}", "%" + inputSearch + "%");
 		}
+		if (Utilities.isValidId(tagid)) {
+			QueryUtils.addWhere(qb, " and  t.tagid = {0}", tagid);
+		}
+
+		QueryUtils.addJoin(qb, "left join IgnoreGroups u on u.tagid = t.tagid");
 		return orgService.groupDataGrid(qb);
 	}
 
 	@GetMapping(value = "deptDataGrid")
 	public Object deptDataGrid(UserInfo userInfo, Integer start, Integer length, String deptType, String avg,
-			String month, String inputSearch) {
+			String inputSearch, String startMonth, Integer monthNub, Integer deptId) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.setStart(start);
 		qb.setLength(length);
@@ -159,17 +195,30 @@ public class OrgAction {
 		if (StringUtils.equals(avg, "0")) {
 
 		} else {
-			if (StringUtils.isNotBlank(month)) {
-				QueryUtils.addColumn(qb, "d.value1", "study");
-				QueryUtils.addColumn(qb, "d.value2", "read");
-				QueryUtils.addColumn(qb, "d.value3", "culture");
-				QueryUtils.addColumn(qb, "d.value4", "attendance");
-				QueryUtils.addColumn(qb, "d.value5", "hse");
-				QueryUtils.addColumn(qb, "d.value6", "improve");
-				QueryUtils.addColumn(qb, "d.total", "total");
-				QueryUtils.addColumn(qb, "d.personNub", "personNub");
-				QueryUtils.addJoin(qb, "left join DataResult d on d.relationId = t.id and d.relationType = 'dept'");
-				QueryUtils.addWhere(qb, "and d.month = {0}", month);
+			if (StringUtils.isNotBlank(startMonth)) {
+				List<String> months = Utilities.setMonthList(startMonth, monthNub);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value1)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'dept' and relationId = t.id)",
+						"study", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value2)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'dept' and relationId = t.id)",
+						"read", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value3)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'dept' and relationId = t.id)",
+						"culture", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value4)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'dept' and relationId = t.id)",
+						"attendance", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value5)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'dept' and relationId = t.id)",
+						"hse", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.value6)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'dept' and relationId = t.id)",
+						"improve", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.total)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'dept' and relationId = t.id)",
+						"total", months);
+
 			} else {
 				QueryUtils.addColumn(qb,
 						"(select avg(t1.value1) from DataResult t1 where t1.relationId = t.id and t1.relationType = 'dept' and t1.delFlag = '0')",
@@ -195,6 +244,7 @@ public class OrgAction {
 				QueryUtils.addColumn(qb,
 						"(select count(t1.id) from OrgRelation t1 where t1.relationType ='dept' and t1.relationId = t.id)",
 						"personNub");
+
 			}
 		}
 		QueryUtils.addJoin(qb, "left join DeptRelation u on u.deptId = t.id");
@@ -205,6 +255,9 @@ public class OrgAction {
 				QueryUtils.addWhere(qb, " and  u.deptType = {0}", deptType);
 			}
 		}
+		if (Utilities.isValidId(deptId)) {
+			QueryUtils.addWhere(qb, " and  t.id = {0}", deptId);
+		}
 		if (StringUtils.isNotBlank(inputSearch)) {
 			QueryUtils.addWhere(qb, " and  t.name like {0}", "%" + inputSearch + "%");
 		}
@@ -214,5 +267,10 @@ public class OrgAction {
 	@GetMapping(value = "setDeptType")
 	public Object setDeptType(Integer id, String deptType, UserInfo userInfo) {
 		return orgService.setDeptType(id, deptType, userInfo);
+	}
+
+	@GetMapping(value = "setGroupFlag")
+	public Object setGroupFlag(Integer tagid, String ignoreFlag, UserInfo userInfo) {
+		return orgService.setGroupFlag(tagid, ignoreFlag, userInfo);
 	}
 }

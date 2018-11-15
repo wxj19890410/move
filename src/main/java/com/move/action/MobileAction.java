@@ -1,9 +1,11 @@
 package com.move.action;
 
 import com.move.dao.DataOriginalDao;
+import com.move.exception.ValidateException;
 import com.move.model.OrgDepartment;
 import com.move.model.UserData;
 import com.move.service.DataService;
+import com.move.service.FileService;
 import com.move.service.OrgService;
 import com.move.service.UserService;
 import com.move.service.WxDataService;
@@ -13,10 +15,16 @@ import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
 import com.move.utils.Utilities;
 
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.lang.StringUtils;
 import org.apache.poi.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +47,9 @@ public class MobileAction {
 
 	@Autowired
 	private WxDataService wxDataService;
+
+	@Autowired
+	private FileService fileService;
 
 	@GetMapping(value = "getInfos")
 	public Object getInfos(String userid, String month, UserInfo userInfo) {
@@ -149,9 +160,13 @@ public class MobileAction {
 		QueryUtils.addColumn(qb, "t.total", "total");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
 		if (Utilities.isValidId(deptId)) {
-			QueryUtils.addWhere(qb, "and exists(from OrgRelation t1 where t1.relationId = {0} and t1.relationType = 'dept' and t1.userid=t.userid)", deptId);
+			QueryUtils.addWhere(qb,
+					"and exists(from OrgRelation t1 where t1.relationId = {0} and t1.relationType = 'dept' and t1.userid=t.userid)",
+					deptId);
 		} else if (Utilities.isValidId(groupId)) {
-			QueryUtils.addWhere(qb, "and exists(from OrgRelation t1 where t1.relationId = {0} and t1.relationType = 'tag' and t1.userid=t.userid)", groupId);
+			QueryUtils.addWhere(qb,
+					"and exists(from OrgRelation t1 where t1.relationId = {0} and t1.relationType = 'tag' and t1.userid=t.userid)",
+					groupId);
 		}
 		QueryUtils.addWhere(qb, "and t.month = {0}", month);
 		QueryUtils.addOrder(qb, "t.total desc");
@@ -169,5 +184,11 @@ public class MobileAction {
 		// 获取 access_token
 		return wxDataService.loadInfo(codeId, userid);
 	}
-	
+
+
+	@GetMapping(value = "/dataZip")
+	public Object dataZip(UserInfo userInfo) {
+		return fileService.dataZip(userInfo);
+	}
+
 }

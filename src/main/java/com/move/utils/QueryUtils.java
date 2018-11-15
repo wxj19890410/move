@@ -39,6 +39,7 @@ public class QueryUtils {
 	public static QueryBuilder addSetColumn(QueryBuilder qb, String name, Object param) {
 		return qb.addColumn(name + " = {0}", param);
 	}
+
 	/**
 	 * 增加设置列
 	 * 
@@ -53,7 +54,6 @@ public class QueryUtils {
 	public static QueryBuilder addSetColumn1(QueryBuilder qb, String str, Object... params) {
 		return qb.addColumn(str, params);
 	}
-
 
 	public static QueryBuilder addSetUserInfo(QueryBuilder qb, UserInfo userInfo) {
 		qb.addColumn("t.operator = {0}", userInfo.getUserId());

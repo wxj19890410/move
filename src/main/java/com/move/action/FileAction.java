@@ -1,32 +1,37 @@
 package com.move.action;
 
+import com.move.exception.ValidateException;
 import com.move.service.FileService;
-import com.move.service.LoginService;
+import com.move.utils.DictUtils;
+import com.move.utils.QueryBuilder;
+import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
 import com.move.utils.Utilities;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import org.apache.commons.fileupload.util.Streams;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedOutputStream;
+import java.util.zip.ZipOutputStream;
 
 @CrossOrigin
 @RestController
@@ -37,8 +42,8 @@ public class FileAction {
 	private FileService fileService;
 
 	@RequestMapping(value = "upload")
-	public Object uploadPicture(MultipartFile file,String month, HttpServletRequest request, HttpServletResponse response,
-			UserInfo userInfo) throws IllegalStateException, IOException {
+	public Object uploadPicture(MultipartFile file, String month, HttpServletRequest request,
+			HttpServletResponse response, UserInfo userInfo) throws IllegalStateException, IOException {
 		// 获取文件需要上传到的路径
 		// System.out.println("进入后台成功");
 		String path = null;// 文件路径
@@ -64,11 +69,71 @@ public class FileAction {
 			// 转存文件到指定的路径
 			file.transferTo(new File(rootPath + path));
 			String finalPath = "/files/" + trueFileName;
-			return fileService.setFileData(trueFileName, type, path,month, userInfo);
+			return fileService.setFileData(trueFileName, type, path, month, userInfo);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "文件上传失败";
 		}
+	}
+
+	@GetMapping(value = "/downLoad")
+	public void downLoad(HttpServletResponse response, String path) {
+		String rootPath = "C:/huoli/huoliJava";
+		String realPath = rootPath + path;
+		try {
+			response.reset();
+			response.setHeader("Content-Disposition", "attachment; filename=huolizhishu.zip");
+			response.setContentType("application/octet-stream;charset=UTF-8");
+			
+			IOUtils.copy(new FileInputStream(realPath), response.getOutputStream());
+			
+			// Streams.copy(new FileInputStream(realPath), new BufferedOutputStream(response.getOutputStream()), true);
+		} catch (Exception e) {
+			throw new ValidateException("");
+		}
+	}
+
+	@GetMapping(value = "/getExcel")
+	public void getExcel(HttpServletResponse response, UserInfo userInfo) {
+		String name = "活力指数人员";
+		String rootPath = "C:/huoli/huoliJava";
+
+		// 设置存放文件的路径
+		String path = rootPath + "/excles/" + UUID.randomUUID().toString();
+
+		fileService.createExcel(path);
+		try {
+			response.reset();
+			response.setHeader("Content-Disposition", "attachment; filename=huolizhishu.xls");
+			response.setContentType("application/octet-stream;charset=UTF-8");
+			Streams.copy(new FileInputStream(path), new BufferedOutputStream(response.getOutputStream()), true);
+		} catch (Exception e) {
+			throw new ValidateException("");
+		}
+	}
+
+	@GetMapping(value = "/getFileDataGrid")
+	public Object getFileDataGrid(Integer start, Integer length, String relationType, UserInfo userInfo,
+			String startMonth, Integer monthNub, String inputSearch) {
+		QueryBuilder qb = new QueryBuilder();
+		qb.setStart(start);
+		qb.setLength(length);
+		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb, "t.month", "month");
+		QueryUtils.addColumn(qb, "t.name", "name");
+		QueryUtils.addColumn(qb, "t.path", "path");
+		QueryUtils.addColumn(qb, "t.ext", "ext");
+		QueryUtils.addColumn(qb, "t.createDate", "createDate");
+		QueryUtils.addColumn(qb, "'已上传'", "status");
+		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+		if (StringUtils.isNotBlank(relationType)) {
+			QueryUtils.addWhereIfNotNull(qb, "and t.relationType = {0}", relationType);
+		}
+		if (StringUtils.isNotBlank(inputSearch)) {
+			QueryUtils.addWhere(qb, "and t.name like {0}", "%" + inputSearch + "%");
+		}
+		QueryUtils.addOrder(qb, "t.createDate desc");
+		return fileService.fileDatagrid(qb);
 	}
 
 }

@@ -1,20 +1,21 @@
 package com.move.service.impl;
 
 import com.move.dao.OrgDepartmentDao;
+import com.google.common.collect.Lists;
 import com.move.dao.DataOriginalDao;
 import com.move.dao.DataResultDao;
 import com.move.dao.MsgHistoryDao;
 import com.move.dao.OrgGroupDao;
 import com.move.dao.OrgRelationDao;
 import com.move.dao.SysFileDao;
+import com.move.dao.UseDataDao;
 import com.move.model.DataOriginal;
 import com.move.model.DataResult;
 import com.move.model.OrgDepartment;
 import com.move.model.OrgGroup;
-import com.move.model.OrgRelation;
+import com.move.model.UserData;
 import com.move.service.DataService;
 import com.move.utils.Datagrid;
-import com.move.utils.DictUtils;
 import com.move.utils.QueryBuilder;
 import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
@@ -53,10 +54,19 @@ public class DataServiceImpl implements DataService {
 	@Autowired
 	private MsgHistoryDao msgHistoryDao;
 
+	@Autowired
+	private UseDataDao useDataDao;
+
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public Datagrid msgHistoryDatagrid(QueryBuilder qb) {
 		return msgHistoryDao.datagrid(qb);
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+	public Datagrid DataResultGrid(QueryBuilder qb) {
+		return dataResultDao.datagrid(qb);
 	}
 
 	@Override
@@ -257,7 +267,60 @@ public class DataServiceImpl implements DataService {
 			sb.append(";");
 			dataResultDao.sqlUpdate(sb.toString(), now, orgGroup.getTagid());
 		}
-		// 设置公司 班组 平均值
+
+		// 插入个人平均值
+		qb = new QueryBuilder();
+		QueryUtils.addWhere(qb, "and t.account is null");
+		List<UserData> userDatas = useDataDao.find(qb);
+		if (null != userDatas && userDatas.size() > 0) {
+			List<String> userids = Lists.newArrayList();
+			for (UserData userData : userDatas) {
+				userids.add(userData.getUserid());
+			}
+			// 删除
+			qb = new QueryBuilder();
+			QueryUtils.addWhere(qb, "and t.relationType = 'preson'");
+			QueryUtils.addWhere(qb, "and t.userid in {0}", userids);
+			dataResultDao.delete(qb);
+
+			for (UserData userData : userDatas) {
+				sb = new StringBuilder();
+				sb.append("insert into data_result (");
+				sb.append(" relation_type");
+				sb.append(",userid");
+				sb.append(",value1");
+				sb.append(",value2");
+				sb.append(",value3");
+				sb.append(",value4");
+				sb.append(",value5");
+				sb.append(",value6");
+				sb.append(",total");
+				sb.append(",del_flag");
+				sb.append(",edit_date");
+				sb.append(",create_date");
+				sb.append(",create_user");
+				sb.append(") ");
+				sb.append("select");
+				sb.append(" 'preson'");
+				sb.append(",:p2");
+				sb.append(",avg(A.value1)");
+				sb.append(",avg(A.value2)");
+				sb.append(",avg(A.value3)");
+				sb.append(",avg(A.value4)");
+				sb.append(",avg(A.value5)");
+				sb.append(",avg(A.value6)");
+				sb.append(",avg(A.total)");
+				sb.append(",'0'");
+				sb.append(",:p1");
+				sb.append(",:p1");
+				sb.append(",count(A.create_user)");
+				sb.append(" from data_original A where ");
+				sb.append(" A.del_flag='0'");
+				sb.append(" and A.userid='" + userData.getUserid() + "'");
+				sb.append(";");
+				dataResultDao.sqlUpdate(sb.toString(), now, userData.getUserid());
+			}
+		}
 
 		return orgDepartments.size() + orgGroups.size() + 1;
 	}
