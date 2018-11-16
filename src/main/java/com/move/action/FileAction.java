@@ -104,6 +104,7 @@ public class FileAction {
 		fileService.createExcel(path);
 		try {
 			response.reset();
+			response.setHeader("Access-Control-Allow-Origin", "*");
 			response.setHeader("Content-Disposition", "attachment; filename=huolizhishu.xls");
 			response.setContentType("application/octet-stream;charset=UTF-8");
 			Streams.copy(new FileInputStream(path), new BufferedOutputStream(response.getOutputStream()), true);
