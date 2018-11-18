@@ -112,12 +112,16 @@ public class OrgAction {
 				"(select count(t1.id) from OrgRelation t1 where t1.relationId = t.tagid and t1.relationType = 'tag')",
 				"number");
 		if (StringUtils.equals(avg, "0")) {
+			QueryUtils.addColumn(qb, "t.createDate", "createDate");
 
 		} else {
 			QueryUtils.addWhere(qb,
 					" and not exists(from IgnoreGroups u where u.tagid = t.tagid and u.ignoreFlag = '1')");
 			if (StringUtils.isNotBlank(startMonth)) {
 				List<String> months = Utilities.setMonthList(startMonth, monthNub);
+				QueryUtils.addColumn(qb,
+						"(select  max(t1.createDate) from DataResult t1 where t1.month in {0} and t1.relationType = 'tag' and relationId = t.tagid)",
+						"createDate", months);
 				QueryUtils.addColumn(qb,
 						"(select sum(t1.value1)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'tag' and relationId = t.tagid)",
 						"study", months);
@@ -139,8 +143,15 @@ public class OrgAction {
 				QueryUtils.addColumn(qb,
 						"(select sum(t1.total)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'tag' and relationId = t.tagid)",
 						"total", months);
+				
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.personNub)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'tag' and relationId = t.tagid)",
+						"personNub", months);
 			} else {
-
+				
+				QueryUtils.addColumn(qb,
+						"(select max(t1.createDate) from DataResult t1 where t1.relationId = t.tagid and t1.relationType = 'tag' and t1.delFlag = '0')",
+						"createDate");
 				QueryUtils.addColumn(qb,
 						"(select avg(t1.value1) from DataResult t1 where t1.relationId = t.tagid and t1.relationType = 'tag' and t1.delFlag = '0')",
 						"study");
@@ -193,10 +204,13 @@ public class OrgAction {
 		QueryUtils.addColumn(qb, "u.deptType", "deptType");
 		QueryUtils.addWhere(qb, "and not exists(select t1.id from OrgDepartment t1 where t1.parentid = t.id)");
 		if (StringUtils.equals(avg, "0")) {
-
+			QueryUtils.addColumn(qb, "t.createDate", "createDate");
 		} else {
 			if (StringUtils.isNotBlank(startMonth)) {
 				List<String> months = Utilities.setMonthList(startMonth, monthNub);
+				QueryUtils.addColumn(qb,
+						"(select  max(t1.createDate) from DataResult t1 where t1.month in {0} and t1.relationType = 'dept' and relationId = t.id)",
+						"createDate", months);
 				QueryUtils.addColumn(qb,
 						"(select sum(t1.value1)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'dept' and relationId = t.id)",
 						"study", months);
@@ -218,8 +232,14 @@ public class OrgAction {
 				QueryUtils.addColumn(qb,
 						"(select sum(t1.total)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'dept' and relationId = t.id)",
 						"total", months);
+				QueryUtils.addColumn(qb,
+						"(select sum(t1.personNub)/count(t1.id) from DataResult t1 where t1.month in {0} and t1.relationType = 'dept' and relationId = t.id)",
+						"personNub", months);
 
 			} else {
+				QueryUtils.addColumn(qb,
+						"(select max(t1.createDate) from DataResult t1 where t1.relationId = t.id and t1.relationType = 'dept' and t1.delFlag = '0')",
+						"createDate");
 				QueryUtils.addColumn(qb,
 						"(select avg(t1.value1) from DataResult t1 where t1.relationId = t.id and t1.relationType = 'dept' and t1.delFlag = '0')",
 						"study");

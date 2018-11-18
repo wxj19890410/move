@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @Table(name="org_department")
@@ -29,7 +30,21 @@ public class OrgDepartment implements Serializable {
     private  Long order;
     
     
-    public Integer getId() {
+    @Column(name = "create_date")
+    private  Date createDate;
+    
+    
+    
+    
+    public Date getCreateDate() {
+		return createDate;
+	}
+
+	public void setCreateDate(Date createDate) {
+		this.createDate = createDate;
+	}
+
+	public Integer getId() {
 		return id;
 	}
 

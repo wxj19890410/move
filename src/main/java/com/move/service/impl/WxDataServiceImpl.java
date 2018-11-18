@@ -151,6 +151,9 @@ public class WxDataServiceImpl implements WxDataService {
 			QueryBuilder qb = new QueryBuilder();
 			QueryUtils.addWhere(qb, " and 1=1");
 			orgDepartmentDao.delete(qb);
+			for(OrgDepartment orgDepartment : OrgDepartments){
+				orgDepartment.setCreateDate(now);
+			}
 			orgDepartmentDao.batchSave(OrgDepartments);
 			// 保存关系 更新人员
 			List<OrgRelation> orgRelations = Lists.newArrayList();
@@ -264,6 +267,10 @@ public class WxDataServiceImpl implements WxDataService {
 			QueryBuilder qb = new QueryBuilder();
 			QueryUtils.addWhere(qb, " and 1=1");
 			orgGroupDao.delete(qb);
+			
+			for(OrgGroup orgGroup : orgGroups){
+				orgGroup.setCreateDate(now);
+			}
 			orgGroupDao.batchSave(orgGroups);
 			// 保存关系
 			List<OrgRelation> orgRelations = Lists.newArrayList();

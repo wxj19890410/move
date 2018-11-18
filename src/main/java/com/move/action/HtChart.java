@@ -1,5 +1,6 @@
 package com.move.action;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class HtChart {
 	@GetMapping(value = "dataChart12")
 	public Object dataChart12(String month, UserInfo userInfo) {
 		Map<String, Object> data = new HashMap<>();
-		List<Integer> chart1 = Lists.newArrayList();
+		List<BigDecimal> chart1 = Lists.newArrayList();
 		List<Map<String, Object>> chart2 = Lists.newArrayList();
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addWhere(qb, "and t.relationType = 'company'");
@@ -42,31 +43,31 @@ public class HtChart {
 		DataResult dataResult = dataService.getDataResult(qb);
 		if (null == dataResult) {
 			dataResult = new DataResult();
-			dataResult.setValue1(0);
-			dataResult.setValue2(0);
-			dataResult.setValue3(0);
-			dataResult.setValue4(0);
-			dataResult.setValue5(0);
-			dataResult.setValue6(0);
+			dataResult.setValue1(new BigDecimal(0));
+			dataResult.setValue2(new BigDecimal(0));
+			dataResult.setValue3(new BigDecimal(0));
+			dataResult.setValue4(new BigDecimal(0));
+			dataResult.setValue5(new BigDecimal(0));
+			dataResult.setValue6(new BigDecimal(0));
 		} else {
 
-			if (!Utilities.isValidId(dataResult.getValue1())) {
-				dataResult.setValue1(0);
+			if (null == dataResult.getValue1()) {
+				dataResult.setValue1(new BigDecimal(0));
 			}
-			if (!Utilities.isValidId(dataResult.getValue2())) {
-				dataResult.setValue2(0);
+			if (null == dataResult.getValue2()) {
+				dataResult.setValue2(new BigDecimal(0));
 			}
-			if (!Utilities.isValidId(dataResult.getValue3())) {
-				dataResult.setValue3(0);
+			if (null == dataResult.getValue3()) {
+				dataResult.setValue3(new BigDecimal(0));
 			}
-			if (!Utilities.isValidId(dataResult.getValue4())) {
-				dataResult.setValue4(0);
+			if (null == dataResult.getValue4()) {
+				dataResult.setValue4(new BigDecimal(0));
 			}
-			if (!Utilities.isValidId(dataResult.getValue5())) {
-				dataResult.setValue5(0);
+			if (null == dataResult.getValue5()) {
+				dataResult.setValue5(new BigDecimal(0));
 			}
-			if (!Utilities.isValidId(dataResult.getValue6())) {
-				dataResult.setValue6(0);
+			if (null == dataResult.getValue6()) {
+				dataResult.setValue6(new BigDecimal(0));
 			}
 		}
 		chart1.add(dataResult.getValue1());
@@ -116,37 +117,38 @@ public class HtChart {
 		QueryUtils.addOrder(qb, "t.createDate desc");
 		List<DataResult> dataResults = dataService.resultList(qb);
 		if (null != dataResults && dataResults.size() > 0) {
-			List<Integer> value11s = Lists.newArrayList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-			List<Integer> value12s = Lists.newArrayList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-			List<Integer> value13s = Lists.newArrayList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-			List<Integer> value14s = Lists.newArrayList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-			List<Integer> value15s = Lists.newArrayList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-			List<Integer> value16s = Lists.newArrayList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+			List<BigDecimal> value11s = this.setListData();
+			List<BigDecimal> value12s = this.setListData();
+			List<BigDecimal> value13s = this.setListData();
+			List<BigDecimal> value14s = this.setListData();
+			List<BigDecimal> value15s = this.setListData();
+			List<BigDecimal> value16s = this.setListData();
+
 			for (DataResult dataResult : dataResults) {
 				int t = 0;
-				if (dataResult.getMonth().contains("年1月")) {
+				if (dataResult.getMonth().endsWith("-1")) {
 					t = 0;
-				} else if (dataResult.getMonth().contains("年2月")) {
+				} else if (dataResult.getMonth().endsWith("-2")) {
 					t = 1;
-				} else if (dataResult.getMonth().contains("年3月")) {
+				} else if (dataResult.getMonth().endsWith("-3")) {
 					t = 2;
-				} else if (dataResult.getMonth().contains("年4月")) {
+				} else if (dataResult.getMonth().endsWith("-4")) {
 					t = 3;
-				} else if (dataResult.getMonth().contains("年5月")) {
+				} else if (dataResult.getMonth().endsWith("-5")) {
 					t = 4;
-				} else if (dataResult.getMonth().contains("年6月")) {
+				} else if (dataResult.getMonth().endsWith("-6")) {
 					t = 5;
-				} else if (dataResult.getMonth().contains("年7月")) {
+				} else if (dataResult.getMonth().endsWith("-7")) {
 					t = 6;
-				} else if (dataResult.getMonth().contains("年8月")) {
+				} else if (dataResult.getMonth().endsWith("-8")) {
 					t = 7;
-				} else if (dataResult.getMonth().contains("年9月")) {
+				} else if (dataResult.getMonth().endsWith("-9")) {
 					t = 8;
-				} else if (dataResult.getMonth().contains("年10月")) {
+				} else if (dataResult.getMonth().endsWith("-10")) {
 					t = 9;
-				} else if (dataResult.getMonth().contains("年11月")) {
+				} else if (dataResult.getMonth().endsWith("-11")) {
 					t = 10;
-				} else if (dataResult.getMonth().contains("年12月")) {
+				} else if (dataResult.getMonth().endsWith("-12")) {
 					t = 11;
 				}
 				value11s.set(t, dataResult.getValue1());
@@ -202,6 +204,14 @@ public class HtChart {
 		data2 = userService.userDataGrid(qb).getRows();
 		data.put("rankData", data2);
 		return data;
+	}
+
+	private List<BigDecimal> setListData() {
+		List<BigDecimal> values = Lists.newArrayList();
+		for (int t = 0; t < 12; t++) {
+			values.add(new BigDecimal(0));
+		}
+		return values;
 	}
 
 	@GetMapping(value = "findDeptRank")
@@ -270,50 +280,50 @@ public class HtChart {
 		QueryUtils.addWhere(qb, "and t.month like {0}", timeYear + "%");
 		QueryUtils.addOrder(qb, "t.createDate desc");
 		List<DataResult> dataResults = dataService.resultList(qb);
-		Integer vaule1 = 0;
-		Integer vaule2 = 0;
-		Integer vaule3 = 0;
-		Integer vaule4 = 0;
-		Integer vaule5 = 0;
-		Integer vaule6 = 0;
+		BigDecimal vaule1 = new BigDecimal(0);
+		BigDecimal vaule2 = new BigDecimal(0);
+		BigDecimal vaule3 = new BigDecimal(0);
+		BigDecimal vaule4 = new BigDecimal(0);
+		BigDecimal vaule5 = new BigDecimal(0);
+		BigDecimal vaule6 = new BigDecimal(0);
 		if (null != dataResults && dataResults.size() > 0) {
-			List<Integer> value11s = Lists.newArrayList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-			List<Integer> value12s = Lists.newArrayList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-			List<Integer> value13s = Lists.newArrayList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-			List<Integer> value14s = Lists.newArrayList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-			List<Integer> value15s = Lists.newArrayList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-			List<Integer> value16s = Lists.newArrayList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+			List<BigDecimal> value11s = this.setListData();
+			List<BigDecimal> value12s = this.setListData();
+			List<BigDecimal> value13s = this.setListData();
+			List<BigDecimal> value14s = this.setListData();
+			List<BigDecimal> value15s = this.setListData();
+			List<BigDecimal> value16s = this.setListData();
 			for (DataResult dataResult : dataResults) {
-				vaule1 = vaule1 + dataResult.getValue1();
-				vaule2 = vaule2 + dataResult.getValue2();
-				vaule3 = vaule3 + dataResult.getValue3();
-				vaule4 = vaule4 + dataResult.getValue4();
-				vaule5 = vaule5 + dataResult.getValue5();
-				vaule6 = vaule6 + dataResult.getValue6();
+				vaule1 = vaule1.add(dataResult.getValue1());
+				vaule2 = vaule2.add(dataResult.getValue2());
+				vaule3 = vaule3.add(dataResult.getValue3());
+				vaule4 = vaule4.add(dataResult.getValue4());
+				vaule5 = vaule5.add(dataResult.getValue5());
+				vaule6 = vaule6.add(dataResult.getValue6());
 				int t = 0;
-				if (dataResult.getMonth().contains("年1月")) {
+				if (dataResult.getMonth().endsWith("-1")) {
 					t = 0;
-				} else if (dataResult.getMonth().contains("年2月")) {
+				} else if (dataResult.getMonth().endsWith("-2")) {
 					t = 1;
-				} else if (dataResult.getMonth().contains("年3月")) {
+				} else if (dataResult.getMonth().endsWith("-3")) {
 					t = 2;
-				} else if (dataResult.getMonth().contains("年4月")) {
+				} else if (dataResult.getMonth().endsWith("-4")) {
 					t = 3;
-				} else if (dataResult.getMonth().contains("年5月")) {
+				} else if (dataResult.getMonth().endsWith("-5")) {
 					t = 4;
-				} else if (dataResult.getMonth().contains("年6月")) {
+				} else if (dataResult.getMonth().endsWith("-6")) {
 					t = 5;
-				} else if (dataResult.getMonth().contains("年7月")) {
+				} else if (dataResult.getMonth().endsWith("-7")) {
 					t = 6;
-				} else if (dataResult.getMonth().contains("年8月")) {
+				} else if (dataResult.getMonth().endsWith("-8")) {
 					t = 7;
-				} else if (dataResult.getMonth().contains("年9月")) {
+				} else if (dataResult.getMonth().endsWith("-9")) {
 					t = 8;
-				} else if (dataResult.getMonth().contains("年10月")) {
+				} else if (dataResult.getMonth().endsWith("-10")) {
 					t = 9;
-				} else if (dataResult.getMonth().contains("年11月")) {
+				} else if (dataResult.getMonth().endsWith("-11")) {
 					t = 10;
-				} else if (dataResult.getMonth().contains("年12月")) {
+				} else if (dataResult.getMonth().endsWith("-12")) {
 					t = 11;
 				}
 				value11s.set(t, dataResult.getValue1());

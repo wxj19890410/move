@@ -57,6 +57,7 @@ public class DataAction {
 		QueryUtils.addColumn(qb, "t.value5", "hse");
 		QueryUtils.addColumn(qb, "t.value6", "improve");
 		QueryUtils.addColumn(qb, "t.total", "total");
+		QueryUtils.addColumn(qb, "t.createDate", "createDate");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
 		if (StringUtils.isNotBlank(userid)) {
 			QueryUtils.addWhere(qb, "and t.userid like {0}", "%" + userid + "%");

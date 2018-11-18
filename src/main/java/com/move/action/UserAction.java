@@ -110,42 +110,46 @@ public class UserAction {
 			// 数据
 			if (StringUtils.isNotBlank(startMonth)) {
 				List<String> months = Utilities.setMonthList(startMonth, monthNub);
+				QueryUtils.addColumn(qb,
+						"(select  max(t1.createDate) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"createDate", months);
 
 				QueryUtils.addColumn(qb,
 						"(select count(t2.id)+1 from UserData t2 where (select sum(t1.total) from DataOriginal t1 where t1.month in {0} and t1.userid = t2.userid) > (select sum(t1.total) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid) )",
 						"rank", months);
 				QueryUtils.addColumn(qb,
-						"(select sum(t1.value1)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"(select sum(t1.value1*100)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
 						"study", months);
 				QueryUtils.addColumn(qb,
-						"(select sum(t1.value2)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"(select sum(t1.value2*100)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
 						"read", months);
 				QueryUtils.addColumn(qb,
-						"(select sum(t1.value3)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"(select sum(t1.value3*100)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
 						"culture", months);
 				QueryUtils.addColumn(qb,
-						"(select sum(t1.value4)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"(select sum(t1.value4*100)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
 						"attendance", months);
 				QueryUtils.addColumn(qb,
-						"(select sum(t1.value5)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"(select sum(t1.value5*100)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
 						"hse", months);
 				QueryUtils.addColumn(qb,
-						"(select sum(t1.value6)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"(select sum(t1.value6*100)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
 						"improve", months);
 				QueryUtils.addColumn(qb,
-						"(select sum(t1.total)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
+						"(select sum(t1.total*100)/count(t1.id) from DataOriginal t1 where t1.month in {0} and t1.userid = t.userid)",
 						"total", months);
 			} else {
 				QueryUtils.addColumn(qb,
 						"(select count(t1.id)+1 from DataResult t1 where t1.total>d.total and t1.relationType = d.relationType and t1.delFlag='0')",
 						"rank");
-				QueryUtils.addColumn(qb, "d.value1", "study");
-				QueryUtils.addColumn(qb, "d.value2", "read");
-				QueryUtils.addColumn(qb, "d.value3", "culture");
-				QueryUtils.addColumn(qb, "d.value4", "attendance");
-				QueryUtils.addColumn(qb, "d.value5", "hse");
-				QueryUtils.addColumn(qb, "d.value6", "improve");
-				QueryUtils.addColumn(qb, "d.total", "total");
+				QueryUtils.addColumn(qb, "d.value1*100", "study");
+				QueryUtils.addColumn(qb, "d.value2*100", "read");
+				QueryUtils.addColumn(qb, "d.value3*100", "culture");
+				QueryUtils.addColumn(qb, "d.value4*100", "attendance");
+				QueryUtils.addColumn(qb, "d.value5*100", "hse");
+				QueryUtils.addColumn(qb, "d.value6*100", "improve");
+				QueryUtils.addColumn(qb, "d.total*100", "total");
+				QueryUtils.addColumn(qb, "d.createDate", "createDate");
 				QueryUtils.addJoin(qb, "left join DataResult d on d.userid = t.userid ");
 			}
 		}
