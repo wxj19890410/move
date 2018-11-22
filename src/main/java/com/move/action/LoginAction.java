@@ -36,4 +36,5 @@ public class LoginAction {
 		data.put("success", true);
 		return data;
 	}
+
 }

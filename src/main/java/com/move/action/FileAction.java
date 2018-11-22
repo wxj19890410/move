@@ -21,12 +21,16 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.UUID;
 import java.util.zip.CRC32;
@@ -76,23 +80,6 @@ public class FileAction {
 		}
 	}
 
-	@GetMapping(value = "/downLoad")
-	public void downLoad(HttpServletResponse response, String path) {
-		String rootPath = "C:/huoli/huoliJava";
-		String realPath = rootPath + path;
-		try {
-			response.reset();
-			response.setHeader("Content-Disposition", "attachment; filename=huolizhishu.zip");
-			response.setContentType("application/octet-stream;charset=UTF-8");
-			
-			IOUtils.copy(new FileInputStream(realPath), response.getOutputStream());
-			
-			// Streams.copy(new FileInputStream(realPath), new BufferedOutputStream(response.getOutputStream()), true);
-		} catch (Exception e) {
-			throw new ValidateException("");
-		}
-	}
-
 	@GetMapping(value = "/getExcel")
 	public void getExcel(HttpServletResponse response, UserInfo userInfo) {
 		String name = "活力指数人员";
@@ -121,6 +108,7 @@ public class FileAction {
 		qb.setLength(length);
 		QueryUtils.addColumn(qb, "t.id");
 		QueryUtils.addColumn(qb, "t.month", "month");
+		QueryUtils.addColumn(qb, "(select t1.name from UserData t1 where t1.id = t.createUser)", "userName");
 		QueryUtils.addColumn(qb, "t.name", "name");
 		QueryUtils.addColumn(qb, "t.path", "path");
 		QueryUtils.addColumn(qb, "t.ext", "ext");
@@ -128,13 +116,21 @@ public class FileAction {
 		QueryUtils.addColumn(qb, "'已上传'", "status");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
 		if (StringUtils.isNotBlank(relationType)) {
-			QueryUtils.addWhereIfNotNull(qb, "and t.relationType = {0}", relationType);
+			QueryUtils.addWhere(qb, "and t.relationType = {0}", relationType);
 		}
 		if (StringUtils.isNotBlank(inputSearch)) {
 			QueryUtils.addWhere(qb, "and t.name like {0}", "%" + inputSearch + "%");
+		}
+		if (StringUtils.isNotBlank(startMonth)) {
+			List<String> months = Utilities.setMonthList(startMonth, monthNub);
+			QueryUtils.addWhere(qb, "and t.month in {0}", months);
 		}
 		QueryUtils.addOrder(qb, "t.createDate desc");
 		return fileService.fileDatagrid(qb);
 	}
 
+	@GetMapping(value = "/deleteFile")
+	public Object deleteFile(Integer fileId, String path) {
+		return fileService.fileDatagrid(fileId, path);
+	}
 }

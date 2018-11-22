@@ -135,7 +135,7 @@ public abstract class BaseDaoImpl<T> implements BaseDao<T> {
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public T get(QueryBuilder qb) {
 		List<T> objs = find(qb);
-		return objs.size() == 1 ? objs.get(0) : null;
+		return objs.size() > 0 ? objs.get(0) : null;
 	}
 
 	@Transactional(propagation = Propagation.REQUIRED)

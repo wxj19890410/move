@@ -112,6 +112,7 @@ public class DataServiceImpl implements DataService {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addSetColumn1(qb, "t.total = t.value1+t.value2+t.value3+t.value4+t.value5+t.value6");
 		QueryUtils.addSetColumn1(qb, "t.userid = (select t1.userid from UserData t1 where t1.mobile = t.mobile)");
+		QueryUtils.addSetColumn1(qb, "t.deptId = (select t1.deptId from UserData t1 where t1.mobile = t.mobile)");
 		QueryUtils.addWhereIfNotNull(qb, "and t.month={0}", month);
 		QueryUtils.addWhereIfNotNull(qb, "and t.fileId={0}", fileId);
 		dataOriginalDao.update(qb);

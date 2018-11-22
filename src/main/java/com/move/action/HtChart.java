@@ -38,8 +38,9 @@ public class HtChart {
 		List<BigDecimal> chart1 = Lists.newArrayList();
 		List<Map<String, Object>> chart2 = Lists.newArrayList();
 		QueryBuilder qb = new QueryBuilder();
-		QueryUtils.addWhere(qb, "and t.relationType = 'company'");
+		QueryUtils.addWhere(qb, "and t.relationType = {0}" , "company");
 		QueryUtils.addWhere(qb, "and t.month = {0}", month);
+		QueryUtils.addOrder(qb, "t.createDate desc");
 		DataResult dataResult = dataService.getDataResult(qb);
 		if (null == dataResult) {
 			dataResult = new DataResult();
@@ -50,6 +51,7 @@ public class HtChart {
 			dataResult.setValue5(new BigDecimal(0));
 			dataResult.setValue6(new BigDecimal(0));
 		} else {
+			
 
 			if (null == dataResult.getValue1()) {
 				dataResult.setValue1(new BigDecimal(0));
@@ -70,6 +72,7 @@ public class HtChart {
 				dataResult.setValue6(new BigDecimal(0));
 			}
 		}
+		System.out.println(dataResult.getValue1());
 		chart1.add(dataResult.getValue1());
 		chart1.add(dataResult.getValue2());
 		chart1.add(dataResult.getValue3());
@@ -116,15 +119,32 @@ public class HtChart {
 		QueryUtils.addWhere(qb, "and t.month like {0}", timeYear + "%");
 		QueryUtils.addOrder(qb, "t.createDate desc");
 		List<DataResult> dataResults = dataService.resultList(qb);
+		List<BigDecimal> value11s = this.setListData();
+		List<BigDecimal> value12s = this.setListData();
+		List<BigDecimal> value13s = this.setListData();
+		List<BigDecimal> value14s = this.setListData();
+		List<BigDecimal> value15s = this.setListData();
+		List<BigDecimal> value16s = this.setListData();
 		if (null != dataResults && dataResults.size() > 0) {
-			List<BigDecimal> value11s = this.setListData();
-			List<BigDecimal> value12s = this.setListData();
-			List<BigDecimal> value13s = this.setListData();
-			List<BigDecimal> value14s = this.setListData();
-			List<BigDecimal> value15s = this.setListData();
-			List<BigDecimal> value16s = this.setListData();
-
 			for (DataResult dataResult : dataResults) {
+				if (null == dataResult.getValue1()) {
+					dataResult.setValue1(new BigDecimal(0));
+				}
+				if (null == dataResult.getValue2()) {
+					dataResult.setValue2(new BigDecimal(0));
+				}
+				if (null == dataResult.getValue3()) {
+					dataResult.setValue3(new BigDecimal(0));
+				}
+				if (null == dataResult.getValue4()) {
+					dataResult.setValue4(new BigDecimal(0));
+				}
+				if (null == dataResult.getValue5()) {
+					dataResult.setValue5(new BigDecimal(0));
+				}
+				if (null == dataResult.getValue6()) {
+					dataResult.setValue6(new BigDecimal(0));
+				}
 				int t = 0;
 				if (dataResult.getMonth().endsWith("-1")) {
 					t = 0;
@@ -159,38 +179,38 @@ public class HtChart {
 				value15s.set(t, dataResult.getValue5());
 				value16s.set(t, dataResult.getValue6());
 			}
-			Map<String, Object> chartMap = new HashMap<>();
-			chartMap = new HashMap<>();
-			chartMap.put("data", value11s);
-			chartMap.put("name", DictUtils.DATA_VALUE1);
-			chartMap.put("type", "line");
-			data1.add(chartMap);
-			chartMap = new HashMap<>();
-			chartMap.put("data", value12s);
-			chartMap.put("name", DictUtils.DATA_VALUE2);
-			chartMap.put("type", "line");
-			data1.add(chartMap);
-			chartMap = new HashMap<>();
-			chartMap.put("data", value13s);
-			chartMap.put("name", DictUtils.DATA_VALUE3);
-			chartMap.put("type", "line");
-			data1.add(chartMap);
-			chartMap = new HashMap<>();
-			chartMap.put("data", value14s);
-			chartMap.put("name", DictUtils.DATA_VALUE4);
-			chartMap.put("type", "line");
-			data1.add(chartMap);
-			chartMap = new HashMap<>();
-			chartMap.put("data", value15s);
-			chartMap.put("name", DictUtils.DATA_VALUE5);
-			chartMap.put("type", "line");
-			data1.add(chartMap);
-			chartMap = new HashMap<>();
-			chartMap.put("data", value16s);
-			chartMap.put("name", DictUtils.DATA_VALUE6);
-			chartMap.put("type", "line");
-			data1.add(chartMap);
 		}
+		Map<String, Object> chartMap = new HashMap<>();
+		chartMap = new HashMap<>();
+		chartMap.put("data", value11s);
+		chartMap.put("name", DictUtils.DATA_VALUE1);
+		chartMap.put("type", "line");
+		data1.add(chartMap);
+		chartMap = new HashMap<>();
+		chartMap.put("data", value12s);
+		chartMap.put("name", DictUtils.DATA_VALUE2);
+		chartMap.put("type", "line");
+		data1.add(chartMap);
+		chartMap = new HashMap<>();
+		chartMap.put("data", value13s);
+		chartMap.put("name", DictUtils.DATA_VALUE3);
+		chartMap.put("type", "line");
+		data1.add(chartMap);
+		chartMap = new HashMap<>();
+		chartMap.put("data", value14s);
+		chartMap.put("name", DictUtils.DATA_VALUE4);
+		chartMap.put("type", "line");
+		data1.add(chartMap);
+		chartMap = new HashMap<>();
+		chartMap.put("data", value15s);
+		chartMap.put("name", DictUtils.DATA_VALUE5);
+		chartMap.put("type", "line");
+		data1.add(chartMap);
+		chartMap = new HashMap<>();
+		chartMap.put("data", value16s);
+		chartMap.put("name", DictUtils.DATA_VALUE6);
+		chartMap.put("type", "line");
+		data1.add(chartMap);
 		data.put("series", data1);
 		qb = new QueryBuilder();
 		qb.setStart(0);
@@ -200,6 +220,8 @@ public class HtChart {
 				"(select sum(u.total) from DataOriginal u where u.userid = t.userid and u.month like {0})", "sumData",
 				"%" + timeYear + "%");
 		QueryUtils.addWhere(qb, "and t.account is null");
+		QueryUtils.addWhere(qb, "and exists(from DataOriginal t1 where t1.month like {0} and t1.userid = t.userid )",
+				"%" + timeYear + "%");
 		QueryUtils.addOrder(qb, "sumData desc");
 		data2 = userService.userDataGrid(qb).getRows();
 		data.put("rankData", data2);
@@ -221,9 +243,8 @@ public class HtChart {
 		List<Map<String, Object>> data2 = Lists.newArrayList();
 		// 生产部门
 		QueryBuilder qb = new QueryBuilder();
-		qb.setStart(0);
-		qb.setLength(10);
 		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb, "(select count(t1.id)+1 from DataOriginal t1 where t1.month =t.month and t1.total > t.total and not exists(from DeptRelation u where u.deptId = t1.deptId and u.deptType = '02'))", "rank");
 		QueryUtils.addColumn(qb, "t.name", "name");
 		QueryUtils.addColumn(qb, "t.value1", "study");
 		QueryUtils.addColumn(qb, "t.value2", "read");
@@ -232,21 +253,22 @@ public class HtChart {
 		QueryUtils.addColumn(qb, "t.value5", "hse");
 		QueryUtils.addColumn(qb, "t.value6", "improve");
 		QueryUtils.addColumn(qb, "t.total/6", "avg");
+		QueryUtils.addColumn(qb, "t.deptId", "deptId");
+		QueryUtils.addWhere(qb, "and (select count(t1.id) from DataOriginal t1 where t1.month =t.month and t1.total > t.total and not exists(from DeptRelation u where u.deptId = t1.deptId and u.deptType = '02')) < 10");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		QueryUtils.addWhere(qb, "and not exists(from DeptRelation t1 where t1.deptId = u.id and t1.deptType = '02')");
+		QueryUtils.addWhere(qb,
+				"and not exists(from DeptRelation t1 where t1.deptId = t.deptId and t1.deptType = '02')");
 		if (StringUtils.isNotBlank(month)) {
 			QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
 		}
-		QueryUtils.addJoin(qb, "left join OrgRelation u on u.relationType = 'dept' and u.userid=t.userid");
 		QueryUtils.addOrder(qb, "t.total desc");
-		data1 = dataService.DataGrid(qb).getRows();
+		data1 = dataService.originalMapList(qb);
 
 		// 非生产部门
 		qb = new QueryBuilder();
-		qb.setStart(0);
-		qb.setLength(10);
 		QueryUtils.addColumn(qb, "t.id");
-		QueryUtils.addColumn(qb, "t.name", "name");
+		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb, "(select count(t1.id)+1 from DataOriginal t1 where t1.month =t.month and t1.total > t.total and exists(from DeptRelation u where u.deptId = t1.deptId and u.deptType = '02'))", "rank");
 		QueryUtils.addColumn(qb, "t.value1", "study");
 		QueryUtils.addColumn(qb, "t.value2", "read");
 		QueryUtils.addColumn(qb, "t.value3", "culture");
@@ -255,13 +277,13 @@ public class HtChart {
 		QueryUtils.addColumn(qb, "t.value6", "improve");
 		QueryUtils.addColumn(qb, "t.total/6", "avg");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
-		QueryUtils.addWhere(qb, "and exists(from DeptRelation t1 where t1.deptId = u.id and t1.deptType = '02')");
+		QueryUtils.addWhere(qb, "and exists(from DeptRelation t1 where t1.deptId = t.deptId and t1.deptType = '02')");
+		QueryUtils.addWhere(qb, "and (select count(t1.id) from DataOriginal t1 where t1.month =t.month and t1.total > t.total and exists(from DeptRelation u where u.deptId = t1.deptId and u.deptType = '02')) < 10");
 		if (StringUtils.isNotBlank(month)) {
 			QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
 		}
-		QueryUtils.addJoin(qb, "left join OrgRelation u on u.relationType = 'dept' and u.userid=t.userid");
 		QueryUtils.addOrder(qb, "t.total desc");
-		data2 = dataService.DataGrid(qb).getRows();
+		data2 = dataService.originalMapList(qb);
 		data.put("data1", data1);
 		data.put("data2", data2);
 		return data;
@@ -277,7 +299,7 @@ public class HtChart {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addWhere(qb, "and t.relationType = 'tag'");
 		QueryUtils.addWhere(qb, "and t.relationId = {0}", tagid);
-		QueryUtils.addWhere(qb, "and t.month like {0}", timeYear + "%");
+		QueryUtils.addWhere(qb, "and t.month like {0}", "%" + timeYear + "%");
 		QueryUtils.addOrder(qb, "t.createDate desc");
 		List<DataResult> dataResults = dataService.resultList(qb);
 		BigDecimal vaule1 = new BigDecimal(0);
@@ -286,14 +308,33 @@ public class HtChart {
 		BigDecimal vaule4 = new BigDecimal(0);
 		BigDecimal vaule5 = new BigDecimal(0);
 		BigDecimal vaule6 = new BigDecimal(0);
+		List<BigDecimal> value11s = this.setListData();
+		List<BigDecimal> value12s = this.setListData();
+		List<BigDecimal> value13s = this.setListData();
+		List<BigDecimal> value14s = this.setListData();
+		List<BigDecimal> value15s = this.setListData();
+		List<BigDecimal> value16s = this.setListData();
 		if (null != dataResults && dataResults.size() > 0) {
-			List<BigDecimal> value11s = this.setListData();
-			List<BigDecimal> value12s = this.setListData();
-			List<BigDecimal> value13s = this.setListData();
-			List<BigDecimal> value14s = this.setListData();
-			List<BigDecimal> value15s = this.setListData();
-			List<BigDecimal> value16s = this.setListData();
 			for (DataResult dataResult : dataResults) {
+				if (null == dataResult.getValue1()) {
+					dataResult.setValue1(new BigDecimal(0));
+				}
+				if (null == dataResult.getValue2()) {
+					dataResult.setValue2(new BigDecimal(0));
+				}
+				if (null == dataResult.getValue3()) {
+					dataResult.setValue3(new BigDecimal(0));
+				}
+				if (null == dataResult.getValue4()) {
+					dataResult.setValue4(new BigDecimal(0));
+				}
+				if (null == dataResult.getValue5()) {
+					dataResult.setValue5(new BigDecimal(0));
+				}
+				if (null == dataResult.getValue6()) {
+					dataResult.setValue6(new BigDecimal(0));
+				}
+
 				vaule1 = vaule1.add(dataResult.getValue1());
 				vaule2 = vaule2.add(dataResult.getValue2());
 				vaule3 = vaule3.add(dataResult.getValue3());
@@ -334,41 +375,41 @@ public class HtChart {
 				value15s.set(t, dataResult.getValue5());
 				value16s.set(t, dataResult.getValue6());
 			}
-			Map<String, Object> chartMap = new HashMap<>();
-			chartMap = new HashMap<>();
-			chartMap.put("data", value11s);
-			chartMap.put("name", DictUtils.DATA_VALUE1);
-			chartMap.put("type", "line");
-			data1.add(chartMap);
-			chartMap = new HashMap<>();
-			chartMap.put("data", value12s);
-			chartMap.put("name", DictUtils.DATA_VALUE2);
-			chartMap.put("type", "line");
-			data1.add(chartMap);
-			chartMap = new HashMap<>();
-			chartMap.put("data", value13s);
-			chartMap.put("name", DictUtils.DATA_VALUE3);
-			chartMap.put("type", "line");
-			data1.add(chartMap);
-			chartMap = new HashMap<>();
-			chartMap.put("data", value14s);
-			chartMap.put("name", DictUtils.DATA_VALUE4);
-			chartMap.put("type", "line");
-			data1.add(chartMap);
-			chartMap = new HashMap<>();
-			chartMap.put("data", value15s);
-			chartMap.put("name", DictUtils.DATA_VALUE5);
-			chartMap.put("type", "line");
-			data1.add(chartMap);
-			chartMap = new HashMap<>();
-			chartMap.put("data", value16s);
-			chartMap.put("name", DictUtils.DATA_VALUE6);
-			chartMap.put("type", "line");
-			data1.add(chartMap);
 		}
+		Map<String, Object> chartMap = new HashMap<>();
+		chartMap = new HashMap<>();
+		chartMap.put("data", value11s);
+		chartMap.put("name", DictUtils.DATA_VALUE1);
+		chartMap.put("type", "line");
+		data1.add(chartMap);
+		chartMap = new HashMap<>();
+		chartMap.put("data", value12s);
+		chartMap.put("name", DictUtils.DATA_VALUE2);
+		chartMap.put("type", "line");
+		data1.add(chartMap);
+		chartMap = new HashMap<>();
+		chartMap.put("data", value13s);
+		chartMap.put("name", DictUtils.DATA_VALUE3);
+		chartMap.put("type", "line");
+		data1.add(chartMap);
+		chartMap = new HashMap<>();
+		chartMap.put("data", value14s);
+		chartMap.put("name", DictUtils.DATA_VALUE4);
+		chartMap.put("type", "line");
+		data1.add(chartMap);
+		chartMap = new HashMap<>();
+		chartMap.put("data", value15s);
+		chartMap.put("name", DictUtils.DATA_VALUE5);
+		chartMap.put("type", "line");
+		data1.add(chartMap);
+		chartMap = new HashMap<>();
+		chartMap.put("data", value16s);
+		chartMap.put("name", DictUtils.DATA_VALUE6);
+		chartMap.put("type", "line");
+		data1.add(chartMap);
 		data.put("series", data1);
 
-		Map<String, Object> chartMap = new HashMap<>();
+		chartMap = new HashMap<>();
 		chartMap = new HashMap<>();
 		chartMap.put("value", vaule1);
 		chartMap.put("name", DictUtils.DATA_VALUE1);

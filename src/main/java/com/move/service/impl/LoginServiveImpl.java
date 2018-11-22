@@ -77,4 +77,16 @@ public class LoginServiveImpl implements LoginService {
 	public void loadOut(UserInfo userInfo) {
 		Globals.USER_INFOS.remove(userInfo.getLoginUuid());
 	}
+
+	@Override
+	public UserData changPassword(UserInfo userInfo, String oldPassword, String newPassword) throws Exception {
+		UserData user = useDataDao.get(userInfo.getUserId());
+		if (!StringUtils.equals(user.getPassWord(), oldPassword)) {
+			throw new Exception("密码错误");
+		} else {
+			user.setPassWord(newPassword);
+			useDataDao.update(user);
+		}
+		return user;
+	}
 }

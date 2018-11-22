@@ -15,8 +15,12 @@ import com.move.utils.QueryUtils;
 import com.move.utils.UserInfo;
 import com.move.utils.Utilities;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,7 +119,7 @@ public class MobileAction {
 		QueryUtils.addColumn(qb, "t.total", "total");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
 		QueryUtils.addWhere(qb, "and t.userid = {0}", userid);
-		QueryUtils.addOrder(qb, "t.month desc");
+		QueryUtils.addOrder(qb, "t.editDate asc");
 		return dataService.originalMapList(qb);
 	}
 
@@ -126,16 +130,23 @@ public class MobileAction {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addColumn(qb, "t.id");
 		QueryUtils.addColumn(qb, "t.name", "name");
-		QueryUtils.addWhere(qb,
-				"and exists(select t1.id from OrgRelation t1 where t1.relationId = t.id and t1.relationType='dept')");
+		/*
+		 * QueryUtils.addWhere(qb,
+		 * "and exists(select t1.id from OrgRelation t1 where t1.relationId = t.id and t1.relationType='dept')"
+		 * );
+		 */
 		QueryUtils.addOrder(qb, "t.id ");
 		// 组织
 		data.put("dept", orgService.findDeptMap(qb));
 		qb = new QueryBuilder();
 		QueryUtils.addColumn(qb, "t.tagid", "id");
 		QueryUtils.addColumn(qb, "t.tagname", "name");
-		QueryUtils.addWhere(qb,
-				"and exists(select t1.id from OrgRelation t1 where t1.relationId = t.tagid and t1.relationType='tag')");
+		/*
+		 * QueryUtils.addWhere(qb,
+		 * "and exists(select t1.id from OrgRelation t1 where t1.relationId = t.tagid and t1.relationType='tag')"
+		 * );
+		 */
+		QueryUtils.addWhere(qb, " and not exists(from IgnoreGroups u where u.tagid = t.tagid and u.ignoreFlag = '1')");
 		QueryUtils.addOrder(qb, "t.tagid");
 		data.put("tag", orgService.findGroupMap(qb));
 		return data;
@@ -185,10 +196,54 @@ public class MobileAction {
 		return wxDataService.loadInfo(codeId, userid);
 	}
 
-
 	@GetMapping(value = "/dataZip")
 	public Object dataZip(UserInfo userInfo) {
 		return fileService.dataZip(userInfo);
+	}
+
+	@GetMapping(value = "/downLoad")
+	public void downLoad(HttpServletResponse response, String path) {
+		String rootPath = "C:/huoli/huoliJava";
+		String realPath = rootPath + path;
+		try {
+			// response.reset();
+			// response.setHeader("Access-Control-Allow-Origin", "*");
+			// response.setHeader("Content-Disposition", "attachment;
+			// filename=huolizhishu.zip");
+			// response.setContentType("application/x-msdownload");
+			/*
+			 * response.setHeader("Content-Type", "application/zip");
+			 * response.setHeader("Content-Disposition",
+			 * "attachment; filename=\"huolizhishu.zip\"");
+			 * response.setContentType("application/octet-stream;charset=UTF-8")
+			 * ; Streams.copy(new FileInputStream(realPath), new
+			 * BufferedOutputStream(response.getOutputStream()), true);
+			 */
+
+			// path是指欲下载的文件的路径。
+			File file = new File(path);
+			// 取得文件名。
+			String filename = file.getName();
+
+			InputStream fis = new BufferedInputStream(new FileInputStream(realPath));
+			byte[] buffer = new byte[fis.available()];
+			fis.read(buffer);
+			fis.close();
+			// 清空response
+			response.reset();
+			OutputStream toClient = new BufferedOutputStream(response.getOutputStream());
+			response.setHeader("Access-Control-Allow-Origin", "*");
+			response.setContentType("application/octet-stream");
+			// 如果输出的是中文名的文件，在此处就要用URLEncoder.encode方法进行处理
+			response.setHeader("Content-Type", "application/zip");
+			response.addHeader("Content-Disposition", "attachment;filename=" + new String(filename.getBytes()));
+			toClient.write(buffer);
+			toClient.flush();
+			toClient.close();
+
+		} catch (Exception e) {
+			throw new ValidateException("");
+		}
 	}
 
 }

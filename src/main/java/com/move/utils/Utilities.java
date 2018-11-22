@@ -76,13 +76,13 @@ public class Utilities {
 		if (userInfo != null) {
 			model.setCreateUser(userInfo.getUserId());
 			model.setCreateDate(now);
-			model.setEditDate(now);
+			// model.setEditDate(now);
 			if (!Utilities.isValidId(model.getId())) {
 				model.setDelFlag(DictUtils.NO);
-				model.setEditDate(now);
+				// model.setEditDate(now);
 			}
 		} else {
-			model.setEditDate(now);
+			// model.setEditDate(now);
 			if (!Utilities.isValidId(model.getId())) {
 				model.setDelFlag(DictUtils.NO);
 				model.setCreateDate(new Date());
@@ -175,6 +175,9 @@ public class Utilities {
 			}
 		}
 		return date;
+	}
+	public static UserInfo getUserInfo(String loginUuid) {
+		return Globals.USER_INFOS.get(loginUuid);
 	}
 
 }

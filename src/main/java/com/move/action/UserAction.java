@@ -2,6 +2,7 @@ package com.move.action;
 
 import com.alibaba.druid.support.json.JSONUtils;
 import com.move.model.UserData;
+import com.move.service.LoginService;
 import com.move.service.UserService;
 import com.move.utils.DictUtils;
 import com.move.utils.Properties;
@@ -36,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin
 @RestController
@@ -44,7 +46,15 @@ public class UserAction {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private LoginService loginService;
+
 	private static final Logger logger = LoggerFactory.getLogger(UserAction.class);
+
+	@GetMapping(value = "changPassword")
+	public Object changPassword(UserInfo userInfo, String oldPassword, String newPassword) throws Exception {
+		return loginService.changPassword(userInfo, oldPassword, newPassword);
+	}
 
 	@GetMapping(value = "findUserList")
 	public Object findUserData() {
@@ -57,7 +67,7 @@ public class UserAction {
 	@GetMapping(value = "userDataGrid")
 	public Object userDataGrid(UserInfo userInfo, Integer start, Integer length, String haveGroup, String haveDept,
 			String inputSearch, String month, String avg, String mobile, String username, String userid,
-			String startMonth, Integer monthNub, Integer deptId, String deptType) {
+			String startMonth, Integer monthNub, Integer deptId, String deptType, Integer tagid) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.setStart(start);
 		qb.setLength(length);
@@ -98,6 +108,11 @@ public class UserAction {
 		if (Utilities.isValidId(deptId)) {
 			QueryUtils.addWhere(qb, "and t.deptId = {0}", deptId);
 		}
+		if (Utilities.isValidId(tagid)) {
+			QueryUtils.addWhere(qb,
+					"and exists(from OrgRelation t1 where t1.relationType='tag' and t1.relationId= {0})", tagid);
+		}
+
 		if (StringUtils.isNotBlank(inputSearch)) {
 			QueryUtils.addWhere(qb, "and (t.name like {0}", "%" + inputSearch + "%");
 			QueryUtils.addWhere(qb, "or t.position like {0})", "%" + inputSearch + "%");

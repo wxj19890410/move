@@ -40,9 +40,19 @@ public class DataOriginal extends BaseModel implements Serializable {
     private  String month;
 
 
+    @Column(name = "dept_id")
+    private  Integer deptId;
     
+    
+    public Integer getDeptId() {
+		return deptId;
+	}
 
-    public String getUserid() {
+	public void setDeptId(Integer deptId) {
+		this.deptId = deptId;
+	}
+
+	public String getUserid() {
 		return userid;
 	}
 

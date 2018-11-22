@@ -15,4 +15,6 @@ public interface FileService {
 
 	public Datagrid fileDatagrid(QueryBuilder qb);
 
+	public Integer fileDatagrid(Integer fileId, String path);
+
 }

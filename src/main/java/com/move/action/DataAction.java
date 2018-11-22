@@ -83,7 +83,7 @@ public class DataAction {
 
 	@GetMapping(value = "dataResultGrid")
 	public Object dataResultGrid(UserInfo userInfo, Integer start, Integer length, String startMonth, Integer monthNub,
-			String relationType) {
+			String relationType, Integer relationId) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.setStart(start);
 		qb.setLength(length);
@@ -97,15 +97,24 @@ public class DataAction {
 		QueryUtils.addColumn(qb, "t.value6", "improve");
 		QueryUtils.addColumn(qb, "t.total", "total");
 		QueryUtils.addColumn(qb, "t.personNub", "personNub");
-		QueryUtils.addWhere(qb, "and t.personNub > 0");
-		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
 		QueryUtils.addColumn(qb, "t.month", "month");
 		QueryUtils.addColumn(qb, "t.createDate", "createDate");
+		QueryUtils.addWhere(qb, "and t.personNub > 0");
+		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
 		if (StringUtils.isNotBlank(relationType)) {
 			QueryUtils.addWhere(qb, "and t.relationType = {0}", relationType);
-		}
+			if (StringUtils.equals(relationType, "tag")) {
+				QueryUtils.addColumn(qb, "(select t1.tagname from OrgGroup t1 where t1.tagid = t.relationId)", "name");
 
+			} else if (StringUtils.equals(relationType, "dept")) {
+				QueryUtils.addColumn(qb, "(select t1.name from OrgDepartment t1 where t1.id = t.relationId)", "name");
+			}
+		}
+		if (Utilities.isValidId(relationId)) {
+			QueryUtils.addWhere(qb, "and t.relationId = {0}", relationId);
+		}
 		QueryUtils.addOrder(qb, "t.month desc");
+		QueryUtils.addOrder(qb, "t.createDate desc");
 		if (StringUtils.isNotBlank(startMonth)) {
 			List<String> months = Utilities.setMonthList(startMonth, monthNub);
 			QueryUtils.addWhere(qb, "and t.month in {0}", months);
@@ -150,18 +159,18 @@ public class DataAction {
 		QueryUtils.addColumn(qb, "t.createDate", "createDate");
 		if (StringUtils.isNotBlank(startMonth)) {
 			List<String> months = Utilities.setMonthList(startMonth, monthNub);
-			QueryUtils.addWhereIfNotNull(qb, "and t.month in {0}", months);
+			QueryUtils.addWhere(qb, "and t.month in {0}", months);
 		}
 		if (StringUtils.isNotBlank(mobile)) {
-			QueryUtils.addWhereIfNotNull(qb, "and u.mobile like {0} ", "%" + mobile + "%");
+			QueryUtils.addWhere(qb, "and u.mobile like {0} ", "%" + mobile + "%");
 		}
 		if (StringUtils.isNotBlank(username)) {
-			QueryUtils.addWhereIfNotNull(qb, "and u.name like {0}", "%" + username + "%");
+			QueryUtils.addWhere(qb, "and u.name like {0}", "%" + username + "%");
 		}
 		if (StringUtils.isNotBlank(userid)) {
-			QueryUtils.addWhereIfNotNull(qb, "and u.userid like {0}", "%" + userid + "%");
+			QueryUtils.addWhere(qb, "and u.userid like {0}", "%" + userid + "%");
 		}
-		QueryUtils.addJoin(qb, "left join UserData u on u.userid = t.userid");
+		QueryUtils.addJoin(qb, "inner join UserData u on u.userid = t.userid");
 		QueryUtils.addWhere(qb, "and u.id is not null");
 		QueryUtils.addOrder(qb, "t.id desc");
 		return dataService.msgHistoryDatagrid(qb);

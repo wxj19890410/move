@@ -2,11 +2,13 @@ package com.move.service.impl;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
+import com.move.dao.IgnoreGroupsDao;
 import com.move.dao.MsgHistoryDao;
 import com.move.dao.OrgDepartmentDao;
 import com.move.dao.OrgGroupDao;
 import com.move.dao.OrgRelationDao;
 import com.move.dao.UseDataDao;
+import com.move.model.IgnoreGroups;
 import com.move.model.MsgHistory;
 import com.move.model.OrgDepartment;
 import com.move.model.OrgGroup;
@@ -68,6 +70,9 @@ public class WxDataServiceImpl implements WxDataService {
 
 	@Autowired
 	private MsgHistoryDao msgHistoryDao;
+
+	@Autowired
+	private IgnoreGroupsDao ignoreGroupsDao;
 
 	@Override
 	public String getAccessToken() {
@@ -151,7 +156,7 @@ public class WxDataServiceImpl implements WxDataService {
 			QueryBuilder qb = new QueryBuilder();
 			QueryUtils.addWhere(qb, " and 1=1");
 			orgDepartmentDao.delete(qb);
-			for(OrgDepartment orgDepartment : OrgDepartments){
+			for (OrgDepartment orgDepartment : OrgDepartments) {
 				orgDepartment.setCreateDate(now);
 			}
 			orgDepartmentDao.batchSave(OrgDepartments);
@@ -267,22 +272,31 @@ public class WxDataServiceImpl implements WxDataService {
 			QueryBuilder qb = new QueryBuilder();
 			QueryUtils.addWhere(qb, " and 1=1");
 			orgGroupDao.delete(qb);
-			
-			for(OrgGroup orgGroup : orgGroups){
+
+			for (OrgGroup orgGroup : orgGroups) {
 				orgGroup.setCreateDate(now);
 			}
 			orgGroupDao.batchSave(orgGroups);
 			// 保存关系
 			List<OrgRelation> orgRelations = Lists.newArrayList();
-			int t = 0;
 
 			qb = new QueryBuilder();
 			QueryUtils.addSetColumn(qb, "t.tagNames", "");
 			QueryUtils.addWhere(qb, " and 1=1");
 			useDataDao.update(qb);
 
+			List<Integer> ignoerIds = Lists.newArrayList();
+			qb = new QueryBuilder();
+			QueryUtils.addWhere(qb, " and t.ignoreFlag='1'");
+			List<IgnoreGroups> ignoreGroups = ignoreGroupsDao.find(qb);
+			if (null != ignoreGroups && ignoreGroups.size() > 0) {
+				for (IgnoreGroups ignoreGroup : ignoreGroups) {
+					ignoerIds.add(ignoreGroup.getTagid());
+				}
+			}
+
+			int t = 0;
 			for (OrgGroup orgGroup : orgGroups) {
-				t++;
 				data = "https://qyapi.weixin.qq.com/cgi-bin/tag/get?access_token=" + access_token + "&tagid="
 						+ orgGroup.getTagid();
 				wxUtilModel = new WxUtilModel();
@@ -324,18 +338,19 @@ public class WxDataServiceImpl implements WxDataService {
 						orgRelation.setRelationType("tag");
 						orgRelation.setUserid(userData.getUserid());
 						orgRelations.add(orgRelation);
-
 					}
 				}
-				qb = new QueryBuilder();
-				if (Utilities.equals(t, 1)) {
-					QueryUtils.addSetColumn(qb, "t.tagNames", orgGroup.getTagname());
-				} else {
-					QueryUtils.addSetColumn1(qb, "t.tagNames=concat(t.tagNames,',',{0})", orgGroup.getTagname());
+				if (!ignoerIds.contains(orgGroup.getTagid())) {
+					t++;
+					qb = new QueryBuilder();
+					if (Utilities.equals(t, 1)) {
+						QueryUtils.addSetColumn(qb, "t.tagNames", orgGroup.getTagname());
+					} else {
+						QueryUtils.addSetColumn1(qb, "t.tagNames=concat(t.tagNames,' ',{0})", orgGroup.getTagname());
+					}
+					QueryUtils.addWhere(qb, " and t.userid in {0}", userids);
+					useDataDao.update(qb);
 				}
-				QueryUtils.addWhere(qb, " and t.userid in {0}", userids);
-				useDataDao.update(qb);
-
 			}
 
 			if (null != orgRelations && orgRelations.size() > 0) {
@@ -498,35 +513,79 @@ public class WxDataServiceImpl implements WxDataService {
 		}
 		String userids = "";
 		QueryBuilder qb = new QueryBuilder();
+
+		QueryUtils.addColumn(qb, "d.value1", "study");
+		QueryUtils.addColumn(qb, "d.value2", "read");
+		QueryUtils.addColumn(qb, "d.value3", "culture");
+		QueryUtils.addColumn(qb, "d.value4", "attendance");
+		QueryUtils.addColumn(qb, "d.value5", "hse");
+		QueryUtils.addColumn(qb, "d.value6", "improve");
+		QueryUtils.addColumn(qb, "d.total", "total");
+		QueryUtils.addColumn(qb, "t.userid", "userid");
+		QueryUtils.addColumn(qb, "t.name", "name");
+		QueryUtils.addJoin(qb, "left join DataOriginal d on d.userid = t.userid ");
+		QueryUtils.addWhere(qb, "and d.month = {0}", month);
 		QueryUtils.addWhere(qb, "and t.account is null");
 		QueryUtils.addWhere(qb,
 				"and not exists(select t1.id from IgnoreUsers t1 where t1.ignoreFlag='1' and t1.userid=t.userid)");
-		List<UserData> userDatas = useDataDao.find(qb);
+		List<Map<String, Object>> userDatas = useDataDao.listMap(qb);
 		List<MsgHistory> msgHistorys = Lists.newArrayList();
-
+		String response = null;
 		if (null != userDatas && userDatas.size() > 0) {
 			MsgHistory msgHistory = new MsgHistory();
-			for (UserData userData : userDatas) {
-				userids = userids + userData.getUserid() + "|";
-				msgHistory = new MsgHistory();
-				msgHistory.setContent(content);
-				msgHistory.setCreateDate(now);
-				msgHistory.setCreateName(userInfo.getName());
-				msgHistory.setMonth(month);
-				msgHistory.setState("1");
-				msgHistory.setUserid(userData.getUserid());
-				msgHistorys.add(msgHistory);
-			}
-		}
+			for (Map<String, Object> userData : userDatas) {
+				response = null;
+				userids = "";
+				String msg = "您好";
+				if (null != userData.get("userid")) {
+					userids = userData.get("userid").toString();
+					if (null != userData.get("name")) {
+						msg = msg + "," + userData.get("name").toString();
+					}
+					msg = msg + ",上月活力指数数据已产生,您的活力指数明细:";
+					if (null != userData.get("study")) {
+						msg=msg+DictUtils.DATA_VALUE1+":"+userData.get("study").toString()+" ";
+					}
+					if (null != userData.get("read")) {
+						msg=msg+DictUtils.DATA_VALUE2+":"+userData.get("read").toString()+" ";
+					}
+					if (null != userData.get("culture")) {
+						msg=msg+DictUtils.DATA_VALUE3+":"+userData.get("culture").toString()+" ";
+					}
+					if (null != userData.get("attendance")) {
+						msg=msg+DictUtils.DATA_VALUE4+":"+userData.get("attendance").toString()+" ";
+					}
+					if (null != userData.get("hse")) {
+						msg=msg+DictUtils.DATA_VALUE5+":"+userData.get("hse").toString()+" ";
+					}
+					if (null != userData.get("improve")) {
+						msg=msg+DictUtils.DATA_VALUE6+":"+userData.get("improve").toString()+" ";
+					}
+					if (null != userData.get("total")) {
+						msg=msg+"总计:"+userData.get("total").toString()+" ";
+					}
 
-		//
-		String postData = createPostData("13906748021", "text", Integer.parseInt(Globals.AGENT_ID), "content", content);
-		String response = null;
-		try {
-			response = post("utf-8", "application/json",
-					"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=", postData, access_token);
-		} catch (IOException e) {
-			e.printStackTrace();
+					msgHistory = new MsgHistory();
+					msgHistory.setContent(msg);
+					msgHistory.setCreateDate(now);
+					msgHistory.setCreateName(userInfo.getName());
+					msgHistory.setMonth(month);
+					msgHistory.setState("1");
+					msgHistory.setUserid(userData.get("userid").toString());
+					msgHistorys.add(msgHistory);
+
+					String postData = createPostData(userids, "text", Integer.parseInt(Globals.AGENT_ID), "content",
+							msg);
+
+					try {
+						response = post("utf-8", "application/json",
+								"https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=", postData,
+								access_token);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
 		}
 		msgHistoryDao.batchSave(msgHistorys);
 		return response;
@@ -542,7 +601,7 @@ public class WxDataServiceImpl implements WxDataService {
 		weChatData.setMsgtype(msgtype);
 		Map<Object, Object> content = new HashMap<Object, Object>();
 		content.put(contentKey, contentValue
-				+ "/n 点击查看<a href=\"https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx1575c3f8d572890d&redirect_uri=http://huoli.whchlor-alkali.com&response_type=code&scope=snsapi_base&agentid=1000033\">活力指数</a>");
+				+ ",更多详情点击下方查看:<a href=\"https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx1575c3f8d572890d&redirect_uri=http://huoli.whchlor-alkali.com&response_type=code&scope=snsapi_base&agentid=1000033\">活力指数</a>");
 		weChatData.setText(content);
 		return JsonUtils.toJson(weChatData);
 	}
