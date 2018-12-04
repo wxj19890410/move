@@ -138,7 +138,6 @@ public class WxDataServiceImpl implements WxDataService {
 				while ((str = bufr.readLine()) != null) {
 					JsonObject jo = JsonUtils.fromJson(str).getAsJsonObject();
 					wxUtilModel = JsonUtils.fromJson(jo, WxUtilModel.class);
-					System.out.println(str);
 				}
 				bufr.close();
 			} else {
@@ -161,10 +160,7 @@ public class WxDataServiceImpl implements WxDataService {
 			}
 			orgDepartmentDao.batchSave(OrgDepartments);
 			// 保存关系 更新人员
-			List<OrgRelation> orgRelations = Lists.newArrayList();
-
 			List<UserData> userDatas = Lists.newArrayList();
-
 			for (OrgDepartment orgDepartment : OrgDepartments) {
 				data = "https://qyapi.weixin.qq.com/cgi-bin/user/list?access_token=" + access_token + "&department_id="
 						+ orgDepartment.getId() + "&fetch_child=0";
@@ -196,28 +192,11 @@ public class WxDataServiceImpl implements WxDataService {
 				}
 				List<UserData> lists = Lists.newArrayList();
 				lists = wxUtilModel.getUserlist();
-				userDatas.addAll(lists);
-				if (null != lists && lists.size() >= 0) {
-					OrgRelation orgRelation = new OrgRelation();
-					for (UserData userData : lists) {
-						userData.setDeptId(orgDepartment.getId());
-
-						orgRelation = new OrgRelation();
-						orgRelation.setRelationId(orgDepartment.getId());
-						orgRelation.setRelationType("dept");
-						orgRelation.setUserid(userData.getUserid());
-						orgRelations.add(orgRelation);
-					}
+				for (UserData list : lists) {
+					list.setDeptId(orgDepartment.getId());
+					list.setDeptName(orgDepartment.getName());
 				}
-			}
-
-			if (null != orgRelations && orgRelations.size() >= 0) {
-				// 删除之前关系
-				qb = new QueryBuilder();
-				QueryUtils.addWhere(qb, " and relationType='dept'");
-				orgRelationDao.delete(qb);
-				// 创建关系
-				orgRelationDao.batchSave(orgRelations);
+				userDatas.addAll(lists);
 			}
 			if (null != userDatas && userDatas.size() >= 0) {
 				// 删除人员
@@ -278,10 +257,9 @@ public class WxDataServiceImpl implements WxDataService {
 			}
 			orgGroupDao.batchSave(orgGroups);
 			// 保存关系
-			List<OrgRelation> orgRelations = Lists.newArrayList();
 
 			qb = new QueryBuilder();
-			QueryUtils.addSetColumn(qb, "t.tagNames", "");
+			QueryUtils.addSetColumn(qb, "t.tagName", "");
 			QueryUtils.addWhere(qb, " and 1=1");
 			useDataDao.update(qb);
 
@@ -328,40 +306,21 @@ public class WxDataServiceImpl implements WxDataService {
 				List<String> userids = Lists.newArrayList();
 
 				List<UserData> lists = Lists.newArrayList();
+
 				lists = wxUtilModel.getUserlist();
-				if (null != lists && lists.size() > 0) {
-					OrgRelation orgRelation = new OrgRelation();
-					for (UserData userData : lists) {
-						userids.add(userData.getUserid());
-						orgRelation = new OrgRelation();
-						orgRelation.setRelationId(orgGroup.getTagid());
-						orgRelation.setRelationType("tag");
-						orgRelation.setUserid(userData.getUserid());
-						orgRelations.add(orgRelation);
+				if (null != lists) {
+					for (UserData list : lists) {
+						userids.add(list.getUserid());
 					}
 				}
 				if (!ignoerIds.contains(orgGroup.getTagid())) {
-					t++;
 					qb = new QueryBuilder();
-					if (Utilities.equals(t, 1)) {
-						QueryUtils.addSetColumn(qb, "t.tagNames", orgGroup.getTagname());
-					} else {
-						QueryUtils.addSetColumn1(qb, "t.tagNames=concat(t.tagNames,' ',{0})", orgGroup.getTagname());
-					}
+					QueryUtils.addSetColumn(qb, "t.tagId", orgGroup.getTagid());
+					QueryUtils.addSetColumn(qb, "t.tagName", orgGroup.getTagname());
 					QueryUtils.addWhere(qb, " and t.userid in {0}", userids);
 					useDataDao.update(qb);
 				}
 			}
-
-			if (null != orgRelations && orgRelations.size() > 0) {
-				// 删除之前关系
-				qb = new QueryBuilder();
-				QueryUtils.addWhere(qb, " and relationType='tag'");
-				orgRelationDao.delete(qb);
-				// 创建关系
-				orgRelationDao.batchSave(orgRelations);
-			}
-
 		}
 
 		return orgGroups.size();
@@ -544,25 +503,25 @@ public class WxDataServiceImpl implements WxDataService {
 					}
 					msg = msg + ",上月活力指数数据已产生,您的活力指数明细:";
 					if (null != userData.get("study")) {
-						msg=msg+DictUtils.DATA_VALUE1+":"+userData.get("study").toString()+" ";
+						msg = msg + DictUtils.DATA_VALUE1 + ":" + userData.get("study").toString() + " ";
 					}
 					if (null != userData.get("read")) {
-						msg=msg+DictUtils.DATA_VALUE2+":"+userData.get("read").toString()+" ";
+						msg = msg + DictUtils.DATA_VALUE2 + ":" + userData.get("read").toString() + " ";
 					}
 					if (null != userData.get("culture")) {
-						msg=msg+DictUtils.DATA_VALUE3+":"+userData.get("culture").toString()+" ";
+						msg = msg + DictUtils.DATA_VALUE3 + ":" + userData.get("culture").toString() + " ";
 					}
 					if (null != userData.get("attendance")) {
-						msg=msg+DictUtils.DATA_VALUE4+":"+userData.get("attendance").toString()+" ";
+						msg = msg + DictUtils.DATA_VALUE4 + ":" + userData.get("attendance").toString() + " ";
 					}
 					if (null != userData.get("hse")) {
-						msg=msg+DictUtils.DATA_VALUE5+":"+userData.get("hse").toString()+" ";
+						msg = msg + DictUtils.DATA_VALUE5 + ":" + userData.get("hse").toString() + " ";
 					}
 					if (null != userData.get("improve")) {
-						msg=msg+DictUtils.DATA_VALUE6+":"+userData.get("improve").toString()+" ";
+						msg = msg + DictUtils.DATA_VALUE6 + ":" + userData.get("improve").toString() + " ";
 					}
 					if (null != userData.get("total")) {
-						msg=msg+"总计:"+userData.get("total").toString()+" ";
+						msg = msg + "总计:" + userData.get("total").toString() + " ";
 					}
 
 					msgHistory = new MsgHistory();

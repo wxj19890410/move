@@ -45,4 +45,7 @@ public interface OrgService {
 
 
 	public IgnoreGroups setGroupFlag(Integer tagid, String ignoreFlag, UserInfo userInfo);
+
+
+	public Object setGroupType(Integer id, String groupType, UserInfo userInfo);
 }

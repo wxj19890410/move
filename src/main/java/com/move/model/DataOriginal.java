@@ -43,8 +43,46 @@ public class DataOriginal extends BaseModel implements Serializable {
     @Column(name = "dept_id")
     private  Integer deptId;
     
+	private String alias;
+	
+	
+	@Column(name = "tag_name")
+	private String tagName;
+	
+	@Column(name = "tag_id")
+	private Integer tagId;
+	
+	@Column(name = "dept_name")
+	private String deptName;
+	
+	
     
-    public Integer getDeptId() {
+    
+    public String getTagName() {
+		return tagName;
+	}
+
+	public void setTagName(String tagName) {
+		this.tagName = tagName;
+	}
+
+	public Integer getTagId() {
+		return tagId;
+	}
+
+	public void setTagId(Integer tagId) {
+		this.tagId = tagId;
+	}
+
+	public String getDeptName() {
+		return deptName;
+	}
+
+	public void setDeptName(String deptName) {
+		this.deptName = deptName;
+	}
+
+	public Integer getDeptId() {
 		return deptId;
 	}
 
@@ -146,6 +184,14 @@ public class DataOriginal extends BaseModel implements Serializable {
 
 	public void setTotal(Integer total) {
 		this.total = total;
+	}
+
+	public String getAlias() {
+		return alias;
+	}
+
+	public void setAlias(String alias) {
+		this.alias = alias;
 	}
 
 

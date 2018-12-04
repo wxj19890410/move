@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface DataService  {
+	public List<Map<String, Object>> resultMapList(QueryBuilder qb);
 	public List<Map<String, Object>> originalMapList(QueryBuilder qb);
 	public Datagrid DataGrid(QueryBuilder qb);
 	public Integer setAverageData(String month, Integer fileId, UserInfo userInfo);

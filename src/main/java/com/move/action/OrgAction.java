@@ -66,7 +66,7 @@ public class OrgAction {
 	}
 
 	@GetMapping(value = "findGroupMap")
-	public Object findGroupMap(UserInfo userInfo, String havaIgnore) {
+	public Object findGroupMap(UserInfo userInfo, String havaIgnore, String groupType) {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addColumn(qb, "t.id");
 		QueryUtils.addColumn(qb, "t.tagid", "tagid");
@@ -100,7 +100,7 @@ public class OrgAction {
 
 	@GetMapping(value = "groupDataGrid")
 	public Object groupDataGrid(UserInfo userInfo, Integer start, Integer length, String avg, String month,
-			String inputSearch, Integer tagid, String startMonth, Integer monthNub) {
+			String inputSearch, Integer tagid, String startMonth, Integer monthNub, String groupType) {
 		QueryBuilder qb = new QueryBuilder();
 		qb.setStart(start);
 		qb.setLength(length);
@@ -108,6 +108,7 @@ public class OrgAction {
 		QueryUtils.addColumn(qb, "t.tagid");
 		QueryUtils.addColumn(qb, "t.tagname", "name");
 		QueryUtils.addColumn(qb, "u.ignoreFlag", "ignoreFlag");
+		QueryUtils.addColumn(qb, "(case when exists(from GroupRelation t1 where t1.tagType = '02' and t1.tagId = t.tagid) then '02' else '01' end)", "groupType");
 		QueryUtils.addColumn(qb,
 				"(select count(t1.id) from OrgRelation t1 where t1.relationId = t.tagid and t1.relationType = 'tag')",
 				"number");
@@ -183,6 +184,13 @@ public class OrgAction {
 		}
 		if (Utilities.isValidId(tagid)) {
 			QueryUtils.addWhere(qb, " and  t.tagid = {0}", tagid);
+		}
+		if (StringUtils.isNotBlank(groupType)) {
+			if (StringUtils.equals(groupType, DictUtils.DEPT_TYPE_01)) {
+				QueryUtils.addWhere(qb, " and not exists(from GroupRelation t1 where t1.tagType = '02' and t1.tagId = t.tagid)");
+			} else if (StringUtils.equals(groupType, DictUtils.DEPT_TYPE_02)) {
+				QueryUtils.addWhere(qb, " and exists(from GroupRelation t1 where t1.tagType = '02' and t1.tagId = t.tagid)");
+			}
 		}
 
 		QueryUtils.addJoin(qb, "left join IgnoreGroups u on u.tagid = t.tagid");
@@ -287,6 +295,11 @@ public class OrgAction {
 	@GetMapping(value = "setDeptType")
 	public Object setDeptType(Integer id, String deptType, UserInfo userInfo) {
 		return orgService.setDeptType(id, deptType, userInfo);
+	}
+	
+	@GetMapping(value = "setGroupType")
+	public Object setGroupType(Integer id, String groupType, UserInfo userInfo) {
+		return orgService.setGroupType(id, groupType, userInfo);
 	}
 
 	@GetMapping(value = "setGroupFlag")

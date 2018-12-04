@@ -56,7 +56,13 @@ public class DataServiceImpl implements DataService {
 
 	@Autowired
 	private UseDataDao useDataDao;
-
+	
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
+	public List<Map<String, Object>> resultMapList(QueryBuilder qb) {
+		return dataResultDao.listMap(qb);
+	}
+	
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public Datagrid msgHistoryDatagrid(QueryBuilder qb) {
@@ -107,19 +113,19 @@ public class DataServiceImpl implements DataService {
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	public Integer setAverageData(String month, Integer fileId, UserInfo userInfo) {
+	public Integer setAverageData(String time, Integer fileId, UserInfo userInfo) {
 		// 升级源数据
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addSetColumn1(qb, "t.total = t.value1+t.value2+t.value3+t.value4+t.value5+t.value6");
 		QueryUtils.addSetColumn1(qb, "t.userid = (select t1.userid from UserData t1 where t1.mobile = t.mobile)");
 		QueryUtils.addSetColumn1(qb, "t.deptId = (select t1.deptId from UserData t1 where t1.mobile = t.mobile)");
-		QueryUtils.addWhereIfNotNull(qb, "and t.month={0}", month);
+		QueryUtils.addWhereIfNotNull(qb, "and t.month={0}", time);
 		QueryUtils.addWhereIfNotNull(qb, "and t.fileId={0}", fileId);
 		dataOriginalDao.update(qb);
 		// 删除
-		if (StringUtils.isNotBlank(month)) {
+		if (StringUtils.isNotBlank(time)) {
 			qb = new QueryBuilder();
-			QueryUtils.addWhere(qb, "and t.month={0}", month);
+			QueryUtils.addWhere(qb, "and t.month={0}", time);
 			QueryUtils.addWhereIfNotNull(qb, "and t.fileId={0}", fileId);
 			dataResultDao.delete(qb);
 		}
@@ -147,7 +153,7 @@ public class DataServiceImpl implements DataService {
 		sb.append("select");
 		sb.append(" 'company'");
 		sb.append("," + fileId);
-		sb.append(",'" + month + "'");
+		sb.append(",'" + time + "'");
 		sb.append(",count(A.id)");
 		sb.append(",avg(cast(A.value1 as decimal(18,2)))");
 		sb.append(",avg(cast(A.value2 as decimal(18,2)))");
@@ -162,7 +168,7 @@ public class DataServiceImpl implements DataService {
 		sb.append(",count(A.create_user)");
 		sb.append(" from data_original A where ");
 		sb.append(" A.del_flag='0'");
-		sb.append(" and A.month='" + month + "'");
+		sb.append(" and A.month='" + time + "'");
 		dataResultDao.sqlUpdate(sb.toString(), now);
 		qb = new QueryBuilder();
 		QueryUtils.addWhere(qb,
@@ -195,7 +201,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(" 'dept'");
 			sb.append(",:p2");
 			sb.append("," + fileId);
-			sb.append(",'" + month + "'");
+			sb.append(",'" + time + "'");
 			sb.append(",count(A.id)");
 			sb.append(",avg(cast(A.value1 as decimal(18,2)))");
 			sb.append(",avg(cast(A.value2 as decimal(18,2)))");
@@ -213,7 +219,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(" and A.del_flag='0'");
 			sb.append(" and B.userid=A.userid");
 			sb.append(" and B.relation_id=" + orgDepartment.getId());
-			sb.append(" and A.month='" + month + "';");
+			sb.append(" and A.month='" + time + "';");
 			dataResultDao.sqlUpdate(sb.toString(), now, orgDepartment.getId());
 		}
 
@@ -246,7 +252,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(" 'tag'");
 			sb.append(",:p2");
 			sb.append("," + fileId);
-			sb.append(",'" + month + "'");
+			sb.append(",'" + time + "'");
 			sb.append(",count(A.id)");
 			sb.append(",avg(cast(A.value1 as decimal(18,2)))");
 			sb.append(",avg(cast(A.value2 as decimal(18,2)))");
@@ -264,7 +270,7 @@ public class DataServiceImpl implements DataService {
 			sb.append(" and A.del_flag='0'");
 			sb.append(" and B.userid=A.userid");
 			sb.append(" and B.relation_id=" + orgGroup.getTagid());
-			sb.append(" and A.month='" + month + "'");
+			sb.append(" and A.month='" + time + "'");
 			sb.append(";");
 			dataResultDao.sqlUpdate(sb.toString(), now, orgGroup.getTagid());
 		}
@@ -340,5 +346,7 @@ public class DataServiceImpl implements DataService {
 		Utilities.setUserInfo(data, userInfo);
 		return dataOriginalDao.update(data);
 	}
+
+	
 
 }

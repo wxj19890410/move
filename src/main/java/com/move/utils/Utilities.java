@@ -159,6 +159,19 @@ public class Utilities {
 		List<String> date = Lists.newArrayList();
 		date.add(startMonth);
 		if (null != monthNub && monthNub > 0) {
+			Integer year = Integer.parseInt(startMonth);
+			for (int t = 0; t < monthNub; t++) {
+				Integer year2 = year + t + 1;
+				date.add(year2.toString());
+			}
+		}
+		return date;
+	}
+
+	public static List<String> setMonthList2(String startMonth, Integer monthNub) {
+		List<String> date = Lists.newArrayList();
+		date.add(startMonth);
+		if (null != monthNub && monthNub > 0) {
 			List<String> data = split(startMonth, "-");
 			if (data.size() > 1) {
 				Integer year = Integer.parseInt(data.get(0));
@@ -176,6 +189,7 @@ public class Utilities {
 		}
 		return date;
 	}
+
 	public static UserInfo getUserInfo(String loginUuid) {
 		return Globals.USER_INFOS.get(loginUuid);
 	}

@@ -72,19 +72,19 @@ public class FileServiceImpl implements FileService {
 
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
-	public SysFile setFileData(String name, String ext, String path, String month, UserInfo userInfo) {
+	public SysFile setFileData(String name, String ext, String path, String time, UserInfo userInfo) {
 		// 刪除之前數據
-		if (StringUtils.isNotBlank(month)) {
+		if (StringUtils.isNotBlank(time)) {
 			QueryBuilder qb = new QueryBuilder();
-			QueryUtils.addWhere(qb, " and month={0}", month);
+			QueryUtils.addWhere(qb, " and month={0}", time);
 			sysFileDao.delete(qb);
 		}
-		SysFile sysFile = this.saveSysFile(name, ext, path, month, "file", userInfo);
+		SysFile sysFile = this.saveSysFile(name, ext, path, time, "file", userInfo);
 		try {
 			readExcel(path, name, sysFile.getId(), sysFile.getMonth(), userInfo);
 		} catch (Exception e) {
 		}
-		dataService.setAverageData(month, null, userInfo);
+		dataService.setAverageData(time, null, userInfo);
 		return sysFile;
 	}
 
@@ -121,7 +121,7 @@ public class FileServiceImpl implements FileService {
 		}
 		DataOriginal dataOriginal = null;
 		List<DataOriginal> list = new ArrayList<DataOriginal>();
-		DateFormat format1 = new SimpleDateFormat("yyyy-MM");
+		DateFormat format1 = new SimpleDateFormat("yyyy");
 		Date monthDate = null;
 		if (StringUtils.isNotBlank(month)) {
 			monthDate = format1.parse(month);
@@ -138,51 +138,55 @@ public class FileServiceImpl implements FileService {
 				if (hssfRow != null) {
 					if (hssfRow.getRowNum() > 0) {
 						dataOriginal = new DataOriginal();
-						
 						if (null != hssfRow.getCell(1))
 							dataOriginal.setUserid(hssfRow.getCell(1).toString());
+						else {
+							dataOriginal.setName("别名缺失");
+						}
+						if (null != hssfRow.getCell(2))
+							dataOriginal.setUserid(hssfRow.getCell(2).toString());
 						else {
 							dataOriginal.setName("用户缺失");
 						}
 
-						if (null != hssfRow.getCell(2))
-							dataOriginal.setName(hssfRow.getCell(2).toString());
+						if (null != hssfRow.getCell(3))
+							dataOriginal.setName(hssfRow.getCell(3).toString());
 						else {
 							dataOriginal.setName("用户名缺失");
 						}
-						if (null != hssfRow.getCell(3)) {
-							BigDecimal aa = new BigDecimal(new Double(hssfRow.getCell(3).toString()));
+						if (null != hssfRow.getCell(4)) {
+							BigDecimal aa = new BigDecimal(new Double(hssfRow.getCell(4).toString()));
 							dataOriginal.setMobile(aa.toPlainString());
 						} else {
 							dataOriginal.setMobile("联系方式缺失");
 						}
-						if (matchesString(hssfRow.getCell(7)))
-							dataOriginal.setValue1((new Double(hssfRow.getCell(7).toString())).intValue());
+						if (matchesString(hssfRow.getCell(8)))
+							dataOriginal.setValue1((new Double(hssfRow.getCell(8).toString())).intValue());
 						else {
 							dataOriginal.setValue1(0);
 						}
-						if (matchesString(hssfRow.getCell(8)))
-							dataOriginal.setValue2((new Double(hssfRow.getCell(8).toString())).intValue());
+						if (matchesString(hssfRow.getCell(9)))
+							dataOriginal.setValue2((new Double(hssfRow.getCell(9).toString())).intValue());
 						else {
 							dataOriginal.setValue2(0);
 						}
-						if (matchesString(hssfRow.getCell(9)))
-							dataOriginal.setValue3((new Double(hssfRow.getCell(9).toString())).intValue());
+						if (matchesString(hssfRow.getCell(10)))
+							dataOriginal.setValue3((new Double(hssfRow.getCell(10).toString())).intValue());
 						else {
 							dataOriginal.setValue3(0);
 						}
-						if (matchesString(hssfRow.getCell(10)))
-							dataOriginal.setValue4((new Double(hssfRow.getCell(10).toString())).intValue());
+						if (matchesString(hssfRow.getCell(11)))
+							dataOriginal.setValue4((new Double(hssfRow.getCell(11).toString())).intValue());
 						else {
 							dataOriginal.setValue4(0);
 						}
-						if (matchesString(hssfRow.getCell(11)))
-							dataOriginal.setValue5((new Double(hssfRow.getCell(11).toString())).intValue());
+						if (matchesString(hssfRow.getCell(12)))
+							dataOriginal.setValue5((new Double(hssfRow.getCell(12).toString())).intValue());
 						else {
 							dataOriginal.setValue5(0);
 						}
-						if (matchesString(hssfRow.getCell(12)))
-							dataOriginal.setValue6((new Double(hssfRow.getCell(12).toString())).intValue());
+						if (matchesString(hssfRow.getCell(13)))
+							dataOriginal.setValue6((new Double(hssfRow.getCell(13).toString())).intValue());
 						else {
 							dataOriginal.setValue6(0);
 						}
@@ -213,7 +217,7 @@ public class FileServiceImpl implements FileService {
 	@Override
 	public void createExcel(String path) {
 		// 定义表头
-		String[] title = { "序号", "系统ID", "姓名", "手机号", "主部门", "子部门", "班组", "学习指数", "读书指数", "企业文化", "出勤指数", "HSE", "精益指数" };
+		String[] title = { "序号", "别名", "系统ID", "姓名", "手机号", "主部门", "子部门", "班组", "学习成长", "专业技术", "企业文化", "出勤表现", "HSE", "精益改善" };
 		// 创建excel工作簿
 		HSSFWorkbook workbook = new HSSFWorkbook();
 		// 创建工作表sheet
@@ -228,10 +232,11 @@ public class FileServiceImpl implements FileService {
 		}
 		// 获取人员数据
 		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addColumn(qb, "t.alias");
 		QueryUtils.addColumn(qb, "t.mobile");
 		QueryUtils.addColumn(qb, "t.userid");
 		QueryUtils.addColumn(qb, "t.name");
-		QueryUtils.addColumn(qb, "t.tagNames", "tagNames");
+		QueryUtils.addColumn(qb, "t.tagName", "tagName");
 		QueryUtils.addColumn(qb,
 				"(case when exists(from DeptRelation t1 where t1.deptId = t.deptId and t1.deptType ='02') then '非生产部门' else  '生产部门' end )",
 				"deptType");
@@ -246,29 +251,33 @@ public class FileServiceImpl implements FileService {
 				HSSFCell ncell = nrow.createCell(0);
 				int index = i + 1;
 				ncell.setCellValue("" + index);
-				if (null != user.get("userid")) {
+				if (null != user.get("alias")) {
 					ncell = nrow.createCell(1);
+					ncell.setCellValue(user.get("alias").toString());
+				}
+				if (null != user.get("userid")) {
+					ncell = nrow.createCell(2);
 					ncell.setCellValue(user.get("userid").toString());
 				}
 				if (null != user.get("name")) {
-					ncell = nrow.createCell(2);
+					ncell = nrow.createCell(3);
 					ncell.setCellValue(user.get("name").toString());
 				}
 				if (null != user.get("mobile")) {
-					ncell = nrow.createCell(3);
+					ncell = nrow.createCell(4);
 					ncell.setCellValue(user.get("mobile").toString());
 				}
 				if (null != user.get("deptType")) {
-					ncell = nrow.createCell(4);
+					ncell = nrow.createCell(5);
 					ncell.setCellValue(user.get("deptType").toString());
 				}
 				if (null != user.get("deptName")) {
-					ncell = nrow.createCell(5);
+					ncell = nrow.createCell(6);
 					ncell.setCellValue(user.get("deptName").toString());
 				}
-				if (null != user.get("tagNames")) {
-					ncell = nrow.createCell(6);
-					ncell.setCellValue(user.get("tagNames").toString());
+				if (null != user.get("tagName")) {
+					ncell = nrow.createCell(7);
+					ncell.setCellValue(user.get("tagName").toString());
 				}
 			}
 

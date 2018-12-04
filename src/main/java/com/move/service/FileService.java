@@ -7,7 +7,7 @@ import com.move.utils.UserInfo;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface FileService {
-	public SysFile setFileData(String name, String ext, String path, String month, UserInfo userInfo);
+	public SysFile setFileData(String name, String ext, String path, String time, UserInfo userInfo);
 
 	public void createExcel(String path);
 

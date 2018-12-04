@@ -1,10 +1,12 @@
 package com.move.service.impl;
 
 import com.move.dao.DeptRelationDao;
+import com.move.dao.GroupRelationDao;
 import com.move.dao.IgnoreGroupsDao;
 import com.move.dao.OrgDepartmentDao;
 import com.move.dao.OrgGroupDao;
 import com.move.model.DeptRelation;
+import com.move.model.GroupRelation;
 import com.move.model.IgnoreGroups;
 import com.move.model.IgnoreUsers;
 import com.move.model.OrgDepartment;
@@ -39,6 +41,10 @@ public class OrgServiceImpl implements OrgService {
 	@Autowired
 	private IgnoreGroupsDao ignoreGroupsDao;
 
+
+	@Autowired
+	private GroupRelationDao groupRelationDao;
+	
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public OrgDepartment saveDept(Integer id, String name, String deptType, UserInfo userInfo) {
@@ -138,7 +144,6 @@ public class OrgServiceImpl implements OrgService {
 	@Override
 	@Transactional(propagation = Propagation.REQUIRED)
 	public IgnoreGroups setGroupFlag(Integer tagid, String ignoreFlag, UserInfo userInfo) {
-		System.out.println(ignoreFlag);
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addWhere(qb, "and t.tagid = {0}", tagid);
 		ignoreGroupsDao.delete(qb);
@@ -149,6 +154,21 @@ public class OrgServiceImpl implements OrgService {
 		ignoreGroups.setIgnoreFlag(ignoreFlag);
 		ignoreGroups.setTagid(tagid);
 		return ignoreGroupsDao.save(ignoreGroups);
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.REQUIRED)
+	public Object setGroupType(Integer id, String groupType, UserInfo userInfo) {
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addWhere(qb, "and t.tagId = {0}", id);
+		groupRelationDao.delete(qb);
+		Date now = new Date();
+		GroupRelation groupRelation = new GroupRelation();
+		groupRelation.setCreateDate(now);
+		groupRelation.setEditDate(now);
+		groupRelation.setTagType(groupType);
+		groupRelation.setTagId(id);
+		return groupRelationDao.save(groupRelation);
 	}
 
 }

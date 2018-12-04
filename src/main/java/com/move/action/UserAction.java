@@ -79,12 +79,12 @@ public class UserAction {
 		QueryUtils.addColumn(qb, "t.mobile", "mobile");
 		QueryUtils.addColumn(qb, "t.email", "email");
 		QueryUtils.addColumn(qb, "t.avatar", "avatar");
-		QueryUtils.addColumn(qb, "t.tagNames", "tagNames");
+		QueryUtils.addColumn(qb, "t.tagName", "tagName");
 		QueryUtils.addColumn(qb,
 				"(case when exists(from DeptRelation t1 where t1.deptId = t.deptId and t1.deptType ='02') then '非生产部门' else  '生产部门' end )",
 				"deptType");
 
-		QueryUtils.addColumn(qb, "(select t1.name from OrgDepartment t1 where t1.id = t.deptId)", "deptName");
+		QueryUtils.addColumn(qb, "t.deptName", "deptName");
 		QueryUtils.addWhere(qb, "and t.account is null");
 		QueryUtils.addJoin(qb, "left join IgnoreUsers u on u.userid = t.userid");
 		if (StringUtils.isNotBlank(mobile)) {

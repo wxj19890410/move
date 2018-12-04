@@ -1,5 +1,6 @@
 package com.move.action;
 
+import com.google.common.collect.Lists;
 import com.move.dao.DataOriginalDao;
 import com.move.exception.ValidateException;
 import com.move.model.OrgDepartment;
@@ -130,11 +131,6 @@ public class MobileAction {
 		QueryBuilder qb = new QueryBuilder();
 		QueryUtils.addColumn(qb, "t.id");
 		QueryUtils.addColumn(qb, "t.name", "name");
-		/*
-		 * QueryUtils.addWhere(qb,
-		 * "and exists(select t1.id from OrgRelation t1 where t1.relationId = t.id and t1.relationType='dept')"
-		 * );
-		 */
 		QueryUtils.addOrder(qb, "t.id ");
 		// 组织
 		data.put("dept", orgService.findDeptMap(qb));
@@ -158,9 +154,6 @@ public class MobileAction {
 		qb.setStart(0);
 		qb.setLength(10);
 		QueryUtils.addColumn(qb, "t.id");
-		QueryUtils.addColumn(qb,
-				"(select count(t1.id)+1 from DataOriginal t1 where t1.total>t.total and t1.month = t.month and t1.delFlag='0')",
-				"rank");
 		QueryUtils.addColumn(qb, "t.value1", "study");
 		QueryUtils.addColumn(qb, "t.value2", "read");
 		QueryUtils.addColumn(qb, "t.value3", "culture");
@@ -171,13 +164,23 @@ public class MobileAction {
 		QueryUtils.addColumn(qb, "t.total", "total");
 		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
 		if (Utilities.isValidId(deptId)) {
+			QueryUtils.addColumn(qb,
+					"(select count(t1.id)+1 from DataOriginal t1 where t1.total>t.total and t1.month = t.month and t1.delFlag='0' and t1.deptId = {0})",
+					"rank", deptId);
 			QueryUtils.addWhere(qb,
-					"and exists(from OrgRelation t1 where t1.relationId = {0} and t1.relationType = 'dept' and t1.userid=t.userid)",
+					"and t.deptId = {0}",
 					deptId);
 		} else if (Utilities.isValidId(groupId)) {
+			QueryUtils.addColumn(qb,
+					"(select count(t1.id)+1 from DataOriginal t1 where t1.total>t.total and t1.month = t.month and t1.delFlag='0'  and  exists(from OrgRelation u where u.relationId = {0} and u.relationType = 'tag' and u.userid=t1.userid))",
+					"rank", groupId);
 			QueryUtils.addWhere(qb,
 					"and exists(from OrgRelation t1 where t1.relationId = {0} and t1.relationType = 'tag' and t1.userid=t.userid)",
 					groupId);
+		} else {
+			QueryUtils.addColumn(qb,
+					"(select count(t1.id)+1 from DataOriginal t1 where t1.total>t.total and t1.month = t.month and t1.delFlag='0')",
+					"rank");
 		}
 		QueryUtils.addWhere(qb, "and t.month = {0}", month);
 		QueryUtils.addOrder(qb, "t.total desc");
@@ -245,5 +248,138 @@ public class MobileAction {
 			throw new ValidateException("");
 		}
 	}
+	
 
+	@GetMapping(value = "getDeptRank")
+	public Object getDeptRank(String month, UserInfo userInfo) {
+		Map<String, Object> data = new HashMap<>();
+		List<Map<String, Object>> data1 = Lists.newArrayList();
+		List<Map<String, Object>> data2 = Lists.newArrayList();
+		// 生产部门
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb, "'生产部门'","typeName");
+		QueryUtils.addColumn(qb, "'01'","deptType");
+		QueryUtils.addColumn(qb,
+				"(select count(t1.id)+1 from DataResult t1 where t1.month =t.month and t1.total > t.total and t1.relationType= t.relationType  and not exists(from DeptRelation t2 where t2.deptType='02' and t2.deptId = t1.relationId))",
+				"rank");
+		QueryUtils.addColumn(qb, "t.value1", "study");
+		QueryUtils.addColumn(qb, "t.value2", "read");
+		QueryUtils.addColumn(qb, "t.value3", "culture");
+		QueryUtils.addColumn(qb, "t.value4", "attendance");
+		QueryUtils.addColumn(qb, "t.value5", "hse");
+		QueryUtils.addColumn(qb, "t.value6", "improve");
+		QueryUtils.addColumn(qb, "t.total*t.personNub", "total");
+		QueryUtils.addColumn(qb, "t.total", "avg");
+		QueryUtils.addColumn(qb, "(select t1.name from OrgDepartment t1 where t1.id =t.relationId)", "name");
+		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+		QueryUtils.addWhere(qb, "and t.relationType = 'dept'");
+		QueryUtils.addWhere(qb, "and (u.deptType is null or u.deptType = '01')");
+		QueryUtils.addJoin(qb, "left join DeptRelation u on u.deptId =t.relationId");
+		if (StringUtils.isNotBlank(month)) {
+			QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
+		}
+		QueryUtils.addOrder(qb, "t.total desc");
+		data1= dataService.resultMapList(qb);
+		
+		qb = new QueryBuilder();
+		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb, "'非生产部门'","typeName");
+		QueryUtils.addColumn(qb, "'01'","deptType");
+		QueryUtils.addColumn(qb,
+				"(select count(t1.id)+1 from DataResult t1 where t1.month =t.month and t1.total > t.total and t1.relationType= t.relationType and exists(from DeptRelation t2 where t2.deptType='02' and t2.deptId = t1.relationId))",
+				"rank");
+		QueryUtils.addColumn(qb, "t.value1", "study");
+		QueryUtils.addColumn(qb, "t.value2", "read");
+		QueryUtils.addColumn(qb, "t.value3", "culture");
+		QueryUtils.addColumn(qb, "t.value4", "attendance");
+		QueryUtils.addColumn(qb, "t.value5", "hse");
+		QueryUtils.addColumn(qb, "t.value6", "improve");
+		QueryUtils.addColumn(qb, "t.total*t.personNub", "total");
+		QueryUtils.addColumn(qb, "t.total", "avg");
+		QueryUtils.addColumn(qb, "(select t1.name from OrgDepartment t1 where t1.id =t.relationId)", "name");
+		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+		QueryUtils.addWhere(qb, "and t.relationType = 'dept'");
+		QueryUtils.addWhere(qb, "and u.deptType = '02'");
+		QueryUtils.addJoin(qb, "left join DeptRelation u on u.deptId =t.relationId");
+		if (StringUtils.isNotBlank(month)) {
+			QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
+		}
+		QueryUtils.addOrder(qb, "t.total desc");
+		data2= dataService.resultMapList(qb);
+		
+		data.put("data1", data1);
+		data.put("data2", data2);
+		return data;
+		
+	}
+
+	@GetMapping(value = "orgRank")
+	public Object orgRank(String month, UserInfo userInfo) {
+		Map<String, Object> data = new HashMap<>();
+		List<Map<String, Object>> data1 = Lists.newArrayList();
+		List<Map<String, Object>> data2 = Lists.newArrayList();
+		// 生产部门
+		
+		QueryBuilder qb = new QueryBuilder();
+		QueryUtils.addColumn(qb, "'横班指数'","typeName");
+		QueryUtils.addColumn(qb, "'01'","tagType");
+		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb,
+				"(select count(t1.id)+1 from DataResult t1 where t1.month =t.month and t1.total > t.total and t1.relationType= t.relationType and not exists(from GroupRelation t2 where t2.tagType='02' and t2.tagId = t1.relationId)  and not exists(from IgnoreGroups t2 where t2.tagid = t1.relationId and t2.ignoreFlag = '1'))",
+				"rank");
+		QueryUtils.addColumn(qb, "t.value1", "study");
+		QueryUtils.addColumn(qb, "t.value2", "read");
+		QueryUtils.addColumn(qb, "t.value3", "culture");
+		QueryUtils.addColumn(qb, "t.value4", "attendance");
+		QueryUtils.addColumn(qb, "t.value5", "hse");
+		QueryUtils.addColumn(qb, "t.value6", "improve");
+		QueryUtils.addColumn(qb, "t.total*t.personNub", "total");
+		QueryUtils.addColumn(qb, "t.total", "avg");
+		QueryUtils.addColumn(qb, "(select t1.tagname from OrgGroup t1 where t1.tagid =t.relationId)", "name");
+		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+		QueryUtils.addWhere(qb, "and t.relationType = 'tag'");
+		QueryUtils.addWhere(qb, "and (u.id is null or u.tagType = '01')");
+		QueryUtils.addWhere(qb,
+				" and not exists(from IgnoreGroups t1 where t1.tagid = t.relationId and t1.ignoreFlag = '1')");
+		QueryUtils.addJoin(qb, "left join GroupRelation u on u.tagId =t.relationId");
+		if (StringUtils.isNotBlank(month)) {
+			QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
+		}
+		QueryUtils.addOrder(qb, "t.total desc");
+		data1 = dataService.resultMapList(qb);
+
+		// 班组
+		qb = new QueryBuilder();
+		QueryUtils.addColumn(qb, "'设备部指数'","typeName");
+		QueryUtils.addColumn(qb, "'02'","tagType");
+		QueryUtils.addColumn(qb, "t.id");
+		QueryUtils.addColumn(qb,
+				"(select count(t1.id)+1 from DataResult t1 where t1.month =t.month and t1.total > t.total and t1.relationType= t.relationType and exists(from GroupRelation t2 where t2.tagType='02' and t2.tagId = t1.relationId) and not exists(from IgnoreGroups t2 where t2.tagid = t1.relationId and t2.ignoreFlag = '1'))",
+				"rank");
+		QueryUtils.addColumn(qb, "t.value1", "study");
+		QueryUtils.addColumn(qb, "t.value2", "read");
+		QueryUtils.addColumn(qb, "t.value3", "culture");
+		QueryUtils.addColumn(qb, "t.value4", "attendance");
+		QueryUtils.addColumn(qb, "t.value5", "hse");
+		QueryUtils.addColumn(qb, "t.value6", "improve");
+		QueryUtils.addColumn(qb, "t.total*t.personNub", "total");
+		QueryUtils.addColumn(qb, "t.total", "avg");
+		QueryUtils.addColumn(qb, "(select t1.tagname from OrgGroup t1 where t1.tagid =t.relationId)", "name");
+		QueryUtils.addWhere(qb, "and t.delFlag = {0}", DictUtils.NO);
+		QueryUtils.addWhere(qb, "and t.relationType = 'tag'");
+		if (StringUtils.isNotBlank(month)) {
+			QueryUtils.addWhereIfNotNull(qb, "and t.month = {0}", month);
+		}
+		QueryUtils.addWhere(qb,
+				" and not exists(from IgnoreGroups t1 where t1.tagid = t.relationId and t1.ignoreFlag = '1')");
+		QueryUtils.addWhere(qb, "and u.tagType = '02'");
+		QueryUtils.addJoin(qb, "left join GroupRelation u on u.tagId =t.relationId");
+		QueryUtils.addOrder(qb, "t.total desc");
+		data2 = dataService.resultMapList(qb);
+		data.put("data1", data1);
+		data.put("data2", data2);
+		return data;
+
+	}
 }

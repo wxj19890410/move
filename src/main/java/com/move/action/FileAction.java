@@ -46,7 +46,7 @@ public class FileAction {
 	private FileService fileService;
 
 	@RequestMapping(value = "upload")
-	public Object uploadPicture(MultipartFile file, String month, HttpServletRequest request,
+	public Object uploadPicture(MultipartFile file, String time, HttpServletRequest request,
 			HttpServletResponse response, UserInfo userInfo) throws IllegalStateException, IOException {
 		// 获取文件需要上传到的路径
 		// System.out.println("进入后台成功");
@@ -73,7 +73,7 @@ public class FileAction {
 			// 转存文件到指定的路径
 			file.transferTo(new File(rootPath + path));
 			String finalPath = "/files/" + trueFileName;
-			return fileService.setFileData(trueFileName, type, path, month, userInfo);
+			return fileService.setFileData(trueFileName, type, path, time, userInfo);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return "文件上传失败";
